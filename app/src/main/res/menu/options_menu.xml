@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/menuitem_buttons"
+        android:enabled="false"
+        android:title="@string/menu_buttons"
+        android:visible="false" />
+
+    <item
+        android:id="@+id/menuitem_buttons_4wheel"
+        android:title="@string/menu_buttons_4wheel" />
+
+    <item
+        android:id="@+id/menuitem_touchpad"
+        android:title="@string/menu_touchpad" />
+
+    <item
+        android:id="@+id/menuitem_tank"
+        android:title="@string/menu_tank" />
+
+    <item
+        android:id="@+id/menuitem_tank3motor"
+        android:title="@string/menu_3motor" />
+
+    <item
+        android:id="@+id/menuitem_settings"
+        android:title="@string/menu_settings" />
+
+</menu>

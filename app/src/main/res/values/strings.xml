@@ -1,0 +1,38 @@
+<resources>
+    <string name="app_name">NXT Remote Controller</string>
+
+    <string name="menu_buttons">Button controls</string>
+    <string name="menu_buttons_4wheel">Button controls (4 Wheels)</string>
+    <string name="menu_touchpad">Touchpad controls</string>
+    <string name="menu_tank">Tank controls</string>
+    <string name="menu_3motor">3 Motor controls</string>
+    <string name="menu_settings">Settings</string>
+
+    <string name="power_power">Power:</string>
+    <string name="power_4wheel">Turning Power:</string>
+
+    <string name="conn_btn_connect">Connect</string>
+    <string name="conn_btn_disconnect">Disconnect</string>
+    <string name="conn_btn_connecting">Please Wait</string>
+
+    <string name="conn_state_connected">Connected</string>
+    <string name="conn_state_not_connected">Not Connected</string>
+    <string name="conn_state_connecting">Connecting…</string>
+
+    <string name="devices_paired">Paired devices:</string>
+    <string name="devices_new">Devices found:</string>
+    <string name="devices_no_devices">No devices</string>
+
+    <string name="scan_idle">Scan</string>
+    <string name="scan_scanning">Scanning…</string>
+
+    <string name="settings_header_basic">Basic</string>
+    <string name="settings_header_advanced">Advanced</string>
+
+    <string name="settings_opt_swap_fr">Swap forward/reverse</string>
+    <string name="settings_opt_swap_lr">Swap left/right</string>
+    <string name="settings_opt_regspeed">Regulate speed</string>
+    <string name="settings_opt_syncmotors">Synchronize motors</string>
+    <string name="settings_opt_gamepad">Support game controller</string>
+
+</resources>

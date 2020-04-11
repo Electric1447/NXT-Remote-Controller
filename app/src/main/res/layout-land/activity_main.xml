@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:baselineAligned="false"
+    android:orientation="horizontal"
+    tools:ignore="RtlHardcoded,RtlSymmetry,NestedWeights">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="2"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingLeft="8dp"
+                android:paddingTop="4dp"
+                android:text="@string/power_power"
+                android:textSize="18sp" />
+
+            <SeekBar
+                android:id="@+id/power_seekbar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:max="100"
+                android:paddingTop="4dp"
+                android:paddingBottom="4dp" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/power_4wheel_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingLeft="8dp"
+                android:paddingTop="4dp"
+                android:text="@string/power_4wheel"
+                android:textSize="18sp" />
+
+            <SeekBar
+                android:id="@+id/power_4wheel_seekbar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:max="100"
+                android:paddingTop="4dp"
+                android:paddingBottom="4dp" />
+
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/state_text"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="@string/conn_state_not_connected"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+        <Button
+            android:id="@+id/connection_button"
+            android:layout_width="160dp"
+            android:layout_height="40dp"
+            android:layout_gravity="center"
+            android:layout_marginLeft="20dp"
+            android:layout_marginRight="20dp"
+            android:layout_marginBottom="12dp"
+            android:background="@drawable/button_connect"
+            android:text="@string/conn_btn_connect"
+            android:textSize="14sp" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:gravity="center">
+
+        <eparon.nxtremotecontroller.View.SquareImageButton
+            android:id="@+id/button_left"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="6dp"
+            android:layout_weight="1"
+            android:background="@drawable/rounded_corners"
+            android:backgroundTint="@color/dpad_button_background_idle"
+            android:padding="10dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/d_arrow_left_48dp" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <eparon.nxtremotecontroller.View.SquareImageButton
+                android:id="@+id/button_up"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_margin="6dp"
+                android:background="@drawable/rounded_corners"
+                android:backgroundTint="@color/dpad_button_background_idle"
+                android:padding="10dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/d_arrow_up_48dp" />
+
+            <eparon.nxtremotecontroller.View.SquareImageButton
+                android:id="@+id/button_down"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_gravity="center_horizontal"
+                android:layout_margin="6dp"
+                android:background="@drawable/rounded_corners"
+                android:backgroundTint="@color/dpad_button_background_idle"
+                android:padding="10dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/d_arrow_down_48dp" />
+
+        </LinearLayout>
+
+        <eparon.nxtremotecontroller.View.SquareImageButton
+            android:id="@+id/button_right"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="6dp"
+            android:layout_weight="1"
+            android:background="@drawable/rounded_corners"
+            android:backgroundTint="@color/dpad_button_background_idle"
+            android:padding="10dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/d_arrow_right_48dp" />
+
+    </LinearLayout>
+
+</LinearLayout>
