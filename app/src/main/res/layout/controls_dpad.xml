@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <eparon.nxtremotecontroller.View.SquareImageButton
+        android:id="@+id/button_left"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:layout_margin="6dp"
+        android:layout_weight="1"
+        android:background="@drawable/rounded_corners"
+        android:backgroundTint="@color/dpad_button_background_idle"
+        android:padding="10dp"
+        android:scaleType="fitCenter"
+        android:src="@drawable/d_arrow_left_48dp" />
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <eparon.nxtremotecontroller.View.SquareImageButton
+            android:id="@+id/button_up"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="6dp"
+            android:background="@drawable/rounded_corners"
+            android:backgroundTint="@color/dpad_button_background_idle"
+            android:padding="10dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/d_arrow_up_48dp" />
+
+        <eparon.nxtremotecontroller.View.SquareImageButton
+            android:id="@+id/button_down"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="6dp"
+            android:background="@drawable/rounded_corners"
+            android:backgroundTint="@color/dpad_button_background_idle"
+            android:padding="10dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/d_arrow_down_48dp" />
+
+    </LinearLayout>
+
+    <eparon.nxtremotecontroller.View.SquareImageButton
+        android:id="@+id/button_right"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:layout_margin="6dp"
+        android:layout_weight="1"
+        android:background="@drawable/rounded_corners"
+        android:backgroundTint="@color/dpad_button_background_idle"
+        android:padding="10dp"
+        android:scaleType="fitCenter"
+        android:src="@drawable/d_arrow_right_48dp" />
+
+</LinearLayout>

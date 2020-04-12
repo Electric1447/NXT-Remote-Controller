@@ -19,8 +19,10 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnTouchListener;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -40,7 +42,8 @@ public class MainActivity extends AppCompatActivity {
     SharedPreferences prefs;
 
     static final int REQUEST_ENABLE_BT = 1, REQUEST_CONNECT_DEVICE = 2, REQUEST_SETTINGS = 3;
-    static final int MODE_BUTTONS = 1, MODE_BUTTONS44WHEEL = 2, MODE_TOUCHPAD = 3, MODE_TANK = 4, MODE_TANK3MOTOR = 5;
+    static final int MODE_BUTTONS = 1, MODE_BUTTONS4WHEEL = 2, MODE_TOUCHPAD = 3, MODE_TANK = 4, MODE_TANK3MOTOR = 5;
+    static final int BUTTONS_MODE_DPAD = 1, BUTTONS_MODE_STEERING = 2;
     static final byte INPUT_FORWARD = 0x18, INPUT_REVERSE = 0x19, INPUT_LEFT = 0x1f, INPUT_RIGHT = 0x20;
 
     BluetoothAdapter mBluetoothAdapter;
@@ -51,6 +54,7 @@ public class MainActivity extends AppCompatActivity {
     String mDeviceAddress = null;
 
     TextView mStateText;
+    Switch mButtonModeSwitch;
     Button mConnectionButton;
     Menu mMenu;
 
@@ -59,7 +63,7 @@ public class MainActivity extends AppCompatActivity {
     Tank3MotorView mTank3MotorView;
 
     int mPower = 80, mTurningPower = 60;
-    int mControlsMode = MODE_BUTTONS;
+    int mControlsMode = MODE_BUTTONS, mButtonControlsMode = BUTTONS_MODE_DPAD;
 
     boolean mReverse = false, mReverseLR = false, mRegulateSpeed = false, mSynchronizeMotors = false, mGamepad = true;
 
@@ -85,6 +89,9 @@ public class MainActivity extends AppCompatActivity {
 
             if (savedInstanceState.containsKey("controls_mode"))
                 mControlsMode = savedInstanceState.getInt("controls_mode");
+
+            if (savedInstanceState.containsKey("button_controls_mode"))
+                mButtonControlsMode = savedInstanceState.getInt("button_controls_mode");
         }
 
         if (!NO_BT) {
@@ -108,6 +115,11 @@ public class MainActivity extends AppCompatActivity {
             setContentView(R.layout.activity_main);
             updateMenu(R.id.menuitem_buttons);
 
+            LinearLayout controlsContainer = findViewById(R.id.controls_container);
+            int layoutResID = ((mButtonControlsMode == 1) ? R.layout.controls_dpad : R.layout.controls_steering);
+            LinearLayout inflatedControls = (LinearLayout)View.inflate(this, layoutResID, null);
+            controlsContainer.addView(inflatedControls);
+
             findViewById(R.id.button_up).setOnTouchListener(new DirectionButtonOnTouchListener(1, 1));
             findViewById(R.id.button_down).setOnTouchListener(new DirectionButtonOnTouchListener(-1, -1));
             findViewById(R.id.button_left).setOnTouchListener(new DirectionButtonOnTouchListener(-0.6, 0.6));
@@ -129,9 +141,14 @@ public class MainActivity extends AppCompatActivity {
                 public void onStopTrackingTouch (SeekBar seekBar) {
                 }
             });
-        } else if (mControlsMode == MODE_BUTTONS44WHEEL) {
+        } else if (mControlsMode == MODE_BUTTONS4WHEEL) {
             setContentView(R.layout.activity_main);
             updateMenu(R.id.menuitem_buttons_4wheel);
+
+            LinearLayout controlsContainer = findViewById(R.id.controls_container);
+            int layoutResID = ((mButtonControlsMode == 1) ? R.layout.controls_dpad : R.layout.controls_steering);
+            LinearLayout inflatedControls = (LinearLayout)View.inflate(this, layoutResID, null);
+            controlsContainer.addView(inflatedControls);
 
             findViewById(R.id.power_4wheel_layout).setVisibility(View.VISIBLE);
 
@@ -195,6 +212,10 @@ public class MainActivity extends AppCompatActivity {
 
         mStateText = findViewById(R.id.state_text);
 
+        mButtonModeSwitch = findViewById(R.id.steering_toggle);
+        if (mControlsMode == MODE_BUTTONS || mControlsMode == MODE_BUTTONS4WHEEL)
+            mButtonModeSwitch.setChecked(mButtonControlsMode == BUTTONS_MODE_STEERING);
+
         mConnectionButton = findViewById(R.id.connection_button);
         mConnectionButton.setOnClickListener(v -> {
             if (mState == NXTTalker.STATE_CONNECTED) {
@@ -209,6 +230,24 @@ public class MainActivity extends AppCompatActivity {
         });
 
         displayState();
+    }
+
+    public void changeSteeringDpad (View view) {
+        if (mState == NXTTalker.STATE_CONNECTING) {
+            Toast.makeText(this, "Please wait.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (mButtonModeSwitch == null) {
+            Toast.makeText(this, "An error has occurred.", Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        if (mControlsMode == MODE_BUTTONS || mControlsMode == MODE_BUTTONS4WHEEL) {
+            mButtonModeSwitch.setChecked(!mButtonModeSwitch.isChecked());
+            mButtonControlsMode = mButtonModeSwitch.isChecked() ? BUTTONS_MODE_STEERING : BUTTONS_MODE_DPAD;
+            initializeUI();
+        }
     }
 
     private void displayState () {
@@ -319,7 +358,7 @@ public class MainActivity extends AppCompatActivity {
 
         boolean handled = false;
 
-        if (event.getRepeatCount() <= 10 || (event.getRepeatCount() % 16 == 0))
+        if (event.getRepeatCount() <= 10 || (event.getRepeatCount() % 10 == 0))
             switch (event.getKeyCode()) {
                 case KeyEvent.KEYCODE_BUTTON_A:
                 case KeyEvent.KEYCODE_BUTTON_R2:
@@ -349,7 +388,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void inputHandler (byte input, int action) {
-        boolean dcm = (mControlsMode == MODE_BUTTONS || mControlsMode == MODE_BUTTONS44WHEEL);
+        boolean dcm = (mControlsMode == MODE_BUTTONS || mControlsMode == MODE_BUTTONS4WHEEL);
 
         switch (input) {
             case INPUT_FORWARD:
@@ -371,7 +410,7 @@ public class MainActivity extends AppCompatActivity {
                 }
                 break;
             case INPUT_LEFT:
-                if (mControlsMode == MODE_BUTTONS44WHEEL) {
+                if (mControlsMode == MODE_BUTTONS4WHEEL) {
                     if (action == MotionEvent.ACTION_DOWN) {
                         findViewById(R.id.button_left).setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.dpad_button_background_pressed)));
                         Dpad4WheelMovement(false, 1);
@@ -390,7 +429,7 @@ public class MainActivity extends AppCompatActivity {
                 }
                 break;
             case INPUT_RIGHT:
-                if (mControlsMode == MODE_BUTTONS44WHEEL) {
+                if (mControlsMode == MODE_BUTTONS4WHEEL) {
                     if (action == MotionEvent.ACTION_DOWN) {
                         findViewById(R.id.button_right).setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.dpad_button_background_pressed)));
                         Dpad4WheelMovement(false, -1);
@@ -459,6 +498,7 @@ public class MainActivity extends AppCompatActivity {
         outState.putInt("power", mPower);
         outState.putInt("power_turning", mTurningPower);
         outState.putInt("controls_mode", mControlsMode);
+        outState.putInt("button_controls_mode", mButtonControlsMode);
     }
 
     @Override
@@ -486,7 +526,7 @@ public class MainActivity extends AppCompatActivity {
                 initializeUI();
                 break;
             case R.id.menuitem_buttons_4wheel:
-                mControlsMode = MODE_BUTTONS44WHEEL;
+                mControlsMode = MODE_BUTTONS4WHEEL;
                 initializeUI();
                 break;
             case R.id.menuitem_touchpad:

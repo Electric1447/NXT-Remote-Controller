@@ -11,6 +11,8 @@
     <string name="power_power">Power:</string>
     <string name="power_4wheel">Turning Power:</string>
 
+    <string name="steering_switch">Use Steering Layout:</string>
+
     <string name="conn_btn_connect">Connect</string>
     <string name="conn_btn_disconnect">Disconnect</string>
     <string name="conn_btn_connecting">Please Wait</string>

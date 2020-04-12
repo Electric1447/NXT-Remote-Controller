@@ -11,67 +11,11 @@
         android:orientation="vertical">
 
         <LinearLayout
+            android:id="@+id/controls_container"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="20dp">
-
-            <eparon.nxtremotecontroller.View.SquareImageButton
-                android:id="@+id/button_left"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="bottom"
-                android:layout_margin="6dp"
-                android:layout_weight="1"
-                android:background="@drawable/rounded_corners"
-                android:backgroundTint="@color/dpad_button_background_idle"
-                android:padding="10dp"
-                android:scaleType="fitCenter"
-                android:src="@drawable/d_arrow_left_48dp" />
-
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:orientation="vertical">
-
-                <eparon.nxtremotecontroller.View.SquareImageButton
-                    android:id="@+id/button_up"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_margin="6dp"
-                    android:background="@drawable/rounded_corners"
-                    android:backgroundTint="@color/dpad_button_background_idle"
-                    android:padding="10dp"
-                    android:scaleType="fitCenter"
-                    android:src="@drawable/d_arrow_up_48dp" />
-
-                <eparon.nxtremotecontroller.View.SquareImageButton
-                    android:id="@+id/button_down"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_margin="6dp"
-                    android:background="@drawable/rounded_corners"
-                    android:backgroundTint="@color/dpad_button_background_idle"
-                    android:padding="10dp"
-                    android:scaleType="fitCenter"
-                    android:src="@drawable/d_arrow_down_48dp" />
-
-            </LinearLayout>
-
-            <eparon.nxtremotecontroller.View.SquareImageButton
-                android:id="@+id/button_right"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="bottom"
-                android:layout_margin="6dp"
-                android:layout_weight="1"
-                android:background="@drawable/rounded_corners"
-                android:backgroundTint="@color/dpad_button_background_idle"
-                android:padding="10dp"
-                android:scaleType="fitCenter"
-                android:src="@drawable/d_arrow_right_48dp" />
-
-        </LinearLayout>
+            android:layout_margin="20dp"
+            android:orientation="vertical" />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -123,6 +67,34 @@
                 android:layout_gravity="center_vertical"
                 android:layout_marginLeft="10dp"
                 android:layout_marginRight="10dp"
+                android:max="100"
+                android:paddingTop="4dp"
+                android:paddingBottom="4dp" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="16dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginRight="16dp"
+            android:onClick="changeSteeringDpad">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:text="@string/steering_switch"
+                android:textSize="18sp" />
+
+            <Switch
+                android:id="@+id/steering_toggle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_marginLeft="24dp"
+                android:clickable="false"
                 android:max="100"
                 android:paddingTop="4dp"
                 android:paddingBottom="4dp" />
