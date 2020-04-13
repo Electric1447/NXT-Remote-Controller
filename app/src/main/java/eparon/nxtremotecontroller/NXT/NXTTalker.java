@@ -4,12 +4,10 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.os.Handler;
-import android.util.Log;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Arrays;
 import java.util.UUID;
 
 public class NXTTalker {
@@ -109,7 +107,7 @@ public class NXTTalker {
 
         if (motorSync)
             data[7] |= 0x02;
-        //Log.i("TESTDATA1", "[ " + String.valueOf(data[4]) + " | " + String.valueOf(data[5])  + " ]");
+
         Write(data);
     }
 
@@ -129,7 +127,7 @@ public class NXTTalker {
             data[7] |= 0x02;
             data[21] |= 0x02;
         }
-        //Log.i("TESTDATA2", "[ " + String.valueOf(data[5]) + " | " + String.valueOf(data[19])  + " ]");
+
         Write(data);
     }
 
@@ -151,7 +149,7 @@ public class NXTTalker {
             data[7] |= 0x02;
             data[21] |= 0x02;
         }
-        //Log.i("TESTDATA3", "[ " + String.valueOf(data[5]) + " | " + String.valueOf(data[19]) + " | " + String.valueOf(data[33]) + " ]");
+
         Write(data);
     }
 

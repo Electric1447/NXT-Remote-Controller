@@ -35,9 +35,10 @@
                 android:orientation="vertical">
 
                 <RelativeLayout
+                    android:id="@+id/rlFWDREV"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:onClick="setFWDREV"
+                    android:onClick="cbPrefOnClick"
                     android:paddingLeft="20dp"
                     android:paddingTop="4dp"
                     android:paddingRight="20dp"
@@ -64,9 +65,10 @@
                 </RelativeLayout>
 
                 <RelativeLayout
+                    android:id="@+id/rlLeftRight"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:onClick="setLeftRight"
+                    android:onClick="cbPrefOnClick"
                     android:paddingLeft="20dp"
                     android:paddingTop="4dp"
                     android:paddingRight="20dp"
@@ -112,9 +114,10 @@
                 android:orientation="vertical">
 
                 <RelativeLayout
+                    android:id="@+id/rlRegSpeed"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:onClick="setRegSpeed"
+                    android:onClick="cbPrefOnClick"
                     android:paddingLeft="20dp"
                     android:paddingTop="4dp"
                     android:paddingRight="20dp"
@@ -141,9 +144,10 @@
                 </RelativeLayout>
 
                 <RelativeLayout
+                    android:id="@+id/rlSyncMotors"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:onClick="setSyncMotors"
+                    android:onClick="cbPrefOnClick"
                     android:paddingLeft="20dp"
                     android:paddingTop="4dp"
                     android:paddingRight="20dp"
@@ -170,9 +174,10 @@
                 </RelativeLayout>
 
                 <RelativeLayout
+                    android:id="@+id/rlGamepad"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:onClick="setGamepad"
+                    android:onClick="cbPrefOnClick"
                     android:paddingLeft="20dp"
                     android:paddingTop="4dp"
                     android:paddingRight="20dp"
@@ -204,13 +209,27 @@
 
     </ScrollView>
 
-    <TextView
-        android:id="@+id/ver"
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="top|right"
         android:layout_margin="16dp"
-        android:textSize="15sp" />
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/ver"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="15sp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:onClick="gotoSource"
+            android:text="@string/link_source"
+            android:textColor="@color/hyperlink" />
+
+    </LinearLayout>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:layout_width="36dp"

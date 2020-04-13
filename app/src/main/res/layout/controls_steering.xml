@@ -3,32 +3,6 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
-    <eparon.nxtremotecontroller.View.SquareImageButton
-        android:id="@+id/button_left"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_vertical"
-        android:layout_margin="6dp"
-        android:layout_weight="1"
-        android:background="@drawable/rounded_corners"
-        android:backgroundTint="@color/dpad_button_background_idle"
-        android:padding="10dp"
-        android:scaleType="fitCenter"
-        android:src="@drawable/d_arrow_left_48dp" />
-
-    <eparon.nxtremotecontroller.View.SquareImageButton
-        android:id="@+id/button_right"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_vertical"
-        android:layout_margin="6dp"
-        android:layout_weight="1"
-        android:background="@drawable/rounded_corners"
-        android:backgroundTint="@color/dpad_button_background_idle"
-        android:padding="10dp"
-        android:scaleType="fitCenter"
-        android:src="@drawable/d_arrow_right_48dp" />
-
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -58,5 +32,31 @@
             android:src="@drawable/d_arrow_down_48dp" />
 
     </LinearLayout>
+
+    <eparon.nxtremotecontroller.View.SquareImageButton
+        android:id="@+id/button_left"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:layout_margin="6dp"
+        android:layout_weight="1"
+        android:background="@drawable/rounded_corners"
+        android:backgroundTint="@color/dpad_button_background_idle"
+        android:padding="10dp"
+        android:scaleType="fitCenter"
+        android:src="@drawable/d_arrow_left_48dp" />
+
+    <eparon.nxtremotecontroller.View.SquareImageButton
+        android:id="@+id/button_right"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:layout_margin="6dp"
+        android:layout_weight="1"
+        android:background="@drawable/rounded_corners"
+        android:backgroundTint="@color/dpad_button_background_idle"
+        android:padding="10dp"
+        android:scaleType="fitCenter"
+        android:src="@drawable/d_arrow_right_48dp" />
 
 </LinearLayout>

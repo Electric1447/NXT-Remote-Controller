@@ -12,17 +12,14 @@ public class TouchPadView extends View {
 
     public TouchPadView (Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
-        // TODO Auto-generated constructor stub
     }
 
     public TouchPadView (Context context, AttributeSet attrs) {
         super(context, attrs);
-        // TODO Auto-generated constructor stub
     }
 
     public TouchPadView (Context context) {
         super(context);
-        // TODO Auto-generated constructor stub
     }
 
     public float mCx, mCy;
@@ -55,15 +52,17 @@ public class TouchPadView extends View {
     }
 
     @Override
-    protected void onSizeChanged (int w, int h, int oldw, int oldh) {
-        super.onSizeChanged(w, h, oldw, oldh);
+    protected void onSizeChanged (int width, int height, int oldWidth, int oldHeight) {
+        super.onSizeChanged(width, height, oldWidth, oldHeight);
 
-        mCx = (float)(w / 2);
-        mCy = (float)(h / 2);
-        if (h >= 1.2f * w)
-            mRadius = 0.9f * w * 0.5f;
+        mCx = (float)(width / 2);
+        mCy = (float)(height / 2);
+
+        if (height >= 1.2f * width)
+            mRadius = 0.9f * width * 0.5f;
         else
-            mRadius = 0.9f * h * 5f / 12f;
+            mRadius = 0.9f * height * 5f / 12f;
+
         mOffset = mRadius * 0.2f;
     }
 

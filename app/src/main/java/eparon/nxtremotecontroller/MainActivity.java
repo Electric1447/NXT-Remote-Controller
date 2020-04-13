@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
 import android.content.res.Configuration;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -26,6 +27,7 @@ import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import java.util.Objects;
@@ -98,7 +100,7 @@ public class MainActivity extends AppCompatActivity {
             mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
             if (mBluetoothAdapter == null) {
-                Toast.makeText(this, "Bluetooth is not available", Toast.LENGTH_LONG).show();
+                Toast.makeText(this, getString(R.string.error_bt_na), Toast.LENGTH_LONG).show();
                 finish();
                 return;
             }
@@ -111,19 +113,47 @@ public class MainActivity extends AppCompatActivity {
     //region Activity functions & methods
 
     private void initializeUI () {
-        if (mControlsMode == MODE_BUTTONS) {
+        if (mControlsMode == MODE_BUTTONS || mControlsMode == MODE_BUTTONS4WHEEL) {
             setContentView(R.layout.activity_main);
-            updateMenu(R.id.menuitem_buttons);
 
             LinearLayout controlsContainer = findViewById(R.id.controls_container);
-            int layoutResID = ((mButtonControlsMode == 1) ? R.layout.controls_dpad : R.layout.controls_steering);
+            int layoutResID = ((mButtonControlsMode == BUTTONS_MODE_DPAD) ? R.layout.controls_dpad : R.layout.controls_steering);
             LinearLayout inflatedControls = (LinearLayout)View.inflate(this, layoutResID, null);
             controlsContainer.addView(inflatedControls);
 
             findViewById(R.id.button_up).setOnTouchListener(new DirectionButtonOnTouchListener(1, 1));
             findViewById(R.id.button_down).setOnTouchListener(new DirectionButtonOnTouchListener(-1, -1));
-            findViewById(R.id.button_left).setOnTouchListener(new DirectionButtonOnTouchListener(-0.6, 0.6));
-            findViewById(R.id.button_right).setOnTouchListener(new DirectionButtonOnTouchListener(0.6, -0.6));
+
+            if (mControlsMode == MODE_BUTTONS) {
+                updateMenu(R.id.menuitem_buttons);
+
+                findViewById(R.id.button_left).setOnTouchListener(new DirectionButtonOnTouchListener(-0.6, 0.6));
+                findViewById(R.id.button_right).setOnTouchListener(new DirectionButtonOnTouchListener(0.6, -0.6));
+            } else if (mControlsMode == MODE_BUTTONS4WHEEL) {
+                updateMenu(R.id.menuitem_buttons_4wheel);
+
+                findViewById(R.id.button_left).setOnTouchListener(new DirectionButton4WheelOnTouchListener(1));
+                findViewById(R.id.button_right).setOnTouchListener(new DirectionButton4WheelOnTouchListener(-1));
+
+                findViewById(R.id.power_4wheel_layout).setVisibility(View.VISIBLE);
+
+                SeekBar turningPowerSeekBar = findViewById(R.id.power_4wheel_seekbar);
+                turningPowerSeekBar.setProgress(mTurningPower);
+                turningPowerSeekBar.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
+                    @Override
+                    public void onProgressChanged (SeekBar seekBar, int progress, boolean fromUser) {
+                        mTurningPower = progress;
+                    }
+
+                    @Override
+                    public void onStartTrackingTouch (SeekBar seekBar) {
+                    }
+
+                    @Override
+                    public void onStopTrackingTouch (SeekBar seekBar) {
+                    }
+                });
+            }
 
             SeekBar powerSeekBar = findViewById(R.id.power_seekbar);
             powerSeekBar.setProgress(mPower);
@@ -131,55 +161,6 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void onProgressChanged (SeekBar seekBar, int progress, boolean fromUser) {
                     mPower = progress;
-                }
-
-                @Override
-                public void onStartTrackingTouch (SeekBar seekBar) {
-                }
-
-                @Override
-                public void onStopTrackingTouch (SeekBar seekBar) {
-                }
-            });
-        } else if (mControlsMode == MODE_BUTTONS4WHEEL) {
-            setContentView(R.layout.activity_main);
-            updateMenu(R.id.menuitem_buttons_4wheel);
-
-            LinearLayout controlsContainer = findViewById(R.id.controls_container);
-            int layoutResID = ((mButtonControlsMode == 1) ? R.layout.controls_dpad : R.layout.controls_steering);
-            LinearLayout inflatedControls = (LinearLayout)View.inflate(this, layoutResID, null);
-            controlsContainer.addView(inflatedControls);
-
-            findViewById(R.id.power_4wheel_layout).setVisibility(View.VISIBLE);
-
-            findViewById(R.id.button_up).setOnTouchListener(new DirectionButtonOnTouchListener(1, 1));
-            findViewById(R.id.button_down).setOnTouchListener(new DirectionButtonOnTouchListener(-1, -1));
-            findViewById(R.id.button_left).setOnTouchListener(new DirectionButton4WheelOnTouchListener(1));
-            findViewById(R.id.button_right).setOnTouchListener(new DirectionButton4WheelOnTouchListener(-1));
-
-            SeekBar powerSeekBar = findViewById(R.id.power_seekbar);
-            powerSeekBar.setProgress(mPower);
-            powerSeekBar.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
-                @Override
-                public void onProgressChanged (SeekBar seekBar, int progress, boolean fromUser) {
-                    mPower = progress;
-                }
-
-                @Override
-                public void onStartTrackingTouch (SeekBar seekBar) {
-                }
-
-                @Override
-                public void onStopTrackingTouch (SeekBar seekBar) {
-                }
-            });
-
-            SeekBar turningPowerSeekBar = findViewById(R.id.power_4wheel_seekbar);
-            turningPowerSeekBar.setProgress(mTurningPower);
-            turningPowerSeekBar.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
-                @Override
-                public void onProgressChanged (SeekBar seekBar, int progress, boolean fromUser) {
-                    mTurningPower = progress;
                 }
 
                 @Override
@@ -234,12 +215,12 @@ public class MainActivity extends AppCompatActivity {
 
     public void changeSteeringDpad (View view) {
         if (mState == NXTTalker.STATE_CONNECTING) {
-            Toast.makeText(this, "Please wait.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.error_please_wait), Toast.LENGTH_SHORT).show();
             return;
         }
 
         if (mButtonModeSwitch == null) {
-            Toast.makeText(this, "An error has occurred.", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, getString(R.string.error_generic), Toast.LENGTH_LONG).show();
             return;
         }
 
@@ -257,19 +238,19 @@ public class MainActivity extends AppCompatActivity {
         switch (mState) {
             case NXTTalker.STATE_NONE:
                 stateStr = getString(R.string.conn_state_not_connected);
-                textColor = getResources().getColor(R.color.red);
+                textColor = Color.RED;
                 btnStr = getString(R.string.conn_btn_connect);
                 mConnectionButton.setEnabled(true);
                 break;
             case NXTTalker.STATE_CONNECTING:
                 stateStr = getString(R.string.conn_state_connecting);
-                textColor = getResources().getColor(R.color.yellow);
+                textColor = Color.YELLOW;
                 btnStr = getString(R.string.conn_state_connecting);
                 mConnectionButton.setEnabled(false);
                 break;
             case NXTTalker.STATE_CONNECTED:
                 stateStr = getString(R.string.conn_state_connected);
-                textColor = getResources().getColor(R.color.green);
+                textColor = Color.GREEN;
                 btnStr = getString(R.string.conn_btn_disconnect);
                 mConnectionButton.setEnabled(true);
                 break;
@@ -316,7 +297,7 @@ public class MainActivity extends AppCompatActivity {
                 if (resultCode == Activity.RESULT_OK) {
                     findBrick();
                 } else {
-                    Toast.makeText(this, "Bluetooth not enabled, exiting.", Toast.LENGTH_LONG).show();
+                    Toast.makeText(this, getString(R.string.error_bt_not_enabled), Toast.LENGTH_LONG).show();
                     finish();
                 }
                 break;
@@ -394,37 +375,37 @@ public class MainActivity extends AppCompatActivity {
             case INPUT_FORWARD:
                 if (action == MotionEvent.ACTION_DOWN) {
                     if (dcm) findViewById(R.id.button_up).setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.dpad_button_background_pressed)));
-                    DpadMovement(false, 1, 1);
+                    dpadMovement(false, 1, 1);
                 } else if ((action == MotionEvent.ACTION_UP) || (action == MotionEvent.ACTION_CANCEL)) {
                     if (dcm) findViewById(R.id.button_up).setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.dpad_button_background_idle)));
-                    DpadMovement(true, 1, 1);
+                    dpadMovement(true, 1, 1);
                 }
                 break;
             case INPUT_REVERSE:
                 if (action == MotionEvent.ACTION_DOWN) {
                     if (dcm) findViewById(R.id.button_down).setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.dpad_button_background_pressed)));
-                    DpadMovement(false, -1, -1);
+                    dpadMovement(false, -1, -1);
                 } else if ((action == MotionEvent.ACTION_UP) || (action == MotionEvent.ACTION_CANCEL)) {
                     if (dcm) findViewById(R.id.button_down).setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.dpad_button_background_idle)));
-                    DpadMovement(true, -1, -1);
+                    dpadMovement(true, -1, -1);
                 }
                 break;
             case INPUT_LEFT:
                 if (mControlsMode == MODE_BUTTONS4WHEEL) {
                     if (action == MotionEvent.ACTION_DOWN) {
                         findViewById(R.id.button_left).setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.dpad_button_background_pressed)));
-                        Dpad4WheelMovement(false, 1);
+                        dpad4WheelMovement(false, 1);
                     } else if ((action == MotionEvent.ACTION_UP) || (action == MotionEvent.ACTION_CANCEL)) {
                         findViewById(R.id.button_left).setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.dpad_button_background_idle)));
-                        Dpad4WheelMovement(false, 1);
+                        dpad4WheelMovement(false, 1);
                     }
                 } else {
                     if (action == MotionEvent.ACTION_DOWN) {
                         if (dcm) findViewById(R.id.button_left).setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.dpad_button_background_pressed)));
-                        DpadMovement(false, -0.6, 0.6);
+                        dpadMovement(false, -0.6, 0.6);
                     } else if ((action == MotionEvent.ACTION_UP) || (action == MotionEvent.ACTION_CANCEL)) {
                         if (dcm) findViewById(R.id.button_left).setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.dpad_button_background_idle)));
-                        DpadMovement(true, -0.6, 0.6);
+                        dpadMovement(true, -0.6, 0.6);
                     }
                 }
                 break;
@@ -432,18 +413,18 @@ public class MainActivity extends AppCompatActivity {
                 if (mControlsMode == MODE_BUTTONS4WHEEL) {
                     if (action == MotionEvent.ACTION_DOWN) {
                         findViewById(R.id.button_right).setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.dpad_button_background_pressed)));
-                        Dpad4WheelMovement(false, -1);
+                        dpad4WheelMovement(false, -1);
                     } else if ((action == MotionEvent.ACTION_UP) || (action == MotionEvent.ACTION_CANCEL)) {
                         findViewById(R.id.button_right).setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.dpad_button_background_idle)));
-                        Dpad4WheelMovement(true, -1);
+                        dpad4WheelMovement(true, -1);
                     }
                 } else {
                     if (action == MotionEvent.ACTION_DOWN) {
                         if (dcm) findViewById(R.id.button_right).setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.dpad_button_background_pressed)));
-                        DpadMovement(false, 0.6, -0.6);
+                        dpadMovement(false, 0.6, -0.6);
                     } else if ((action == MotionEvent.ACTION_UP) || (action == MotionEvent.ACTION_CANCEL)) {
                         if (dcm) findViewById(R.id.button_right).setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.dpad_button_background_idle)));
-                        DpadMovement(true, 0.6, -0.6);
+                        dpadMovement(true, 0.6, -0.6);
                     }
                 }
                 break;
@@ -460,9 +441,9 @@ public class MainActivity extends AppCompatActivity {
     protected void onStart () {
         super.onStart();
         if (!NO_BT)
-            if (!mBluetoothAdapter.isEnabled())
+            if (!mBluetoothAdapter.isEnabled()) {
                 startActivityForResult(new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE), REQUEST_ENABLE_BT);
-            else if (mSavedState == NXTTalker.STATE_CONNECTED) {
+            } else if (mSavedState == NXTTalker.STATE_CONNECTED) {
                 BluetoothDevice device = mBluetoothAdapter.getRemoteDevice(mDeviceAddress);
                 mNXTTalker.Connect(device);
             } else {
@@ -491,7 +472,7 @@ public class MainActivity extends AppCompatActivity {
     //region onConfig
 
     @Override
-    protected void onSaveInstanceState (Bundle outState) {
+    protected void onSaveInstanceState (@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
         if (mState == NXTTalker.STATE_CONNECTED)
             outState.putString("device_address", mDeviceAddress);
@@ -502,7 +483,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    public void onConfigurationChanged (Configuration newConfig) {
+    public void onConfigurationChanged (@NonNull Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
         initializeUI();
     }
@@ -554,7 +535,7 @@ public class MainActivity extends AppCompatActivity {
 
     //region DpadMovement
 
-    public void DpadMovement (boolean dispatch, double leftModifier, double rightModifier) {
+    public void dpadMovement (boolean dispatch, double leftModifier, double rightModifier) {
         if (!dispatch) {
             byte power = (byte)mPower;
             if (mReverse)
@@ -573,7 +554,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void Dpad4WheelMovement (boolean dispatch, double turningModifier) {
+    public void dpad4WheelMovement (boolean dispatch, double turningModifier) {
         if (!dispatch) {
             byte power = (byte)mTurningPower;
             if (mReverseLR)
@@ -609,11 +590,11 @@ public class MainActivity extends AppCompatActivity {
             if (action == MotionEvent.ACTION_DOWN) {
                 v.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.dpad_button_background_pressed)));
 
-                DpadMovement(false, leftModifier, rightModifier);
+                dpadMovement(false, leftModifier, rightModifier);
 
             } else if ((action == MotionEvent.ACTION_UP) || (action == MotionEvent.ACTION_CANCEL)) {
                 v.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.dpad_button_background_idle)));
-                DpadMovement(true, leftModifier, rightModifier);
+                dpadMovement(true, leftModifier, rightModifier);
             }
 
             return true;
@@ -635,11 +616,11 @@ public class MainActivity extends AppCompatActivity {
             if (action == MotionEvent.ACTION_DOWN) {
                 v.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.dpad_button_background_pressed)));
 
-                Dpad4WheelMovement(false, turningModifier);
+                dpad4WheelMovement(false, turningModifier);
 
             } else if ((action == MotionEvent.ACTION_UP) || (action == MotionEvent.ACTION_CANCEL)) {
                 v.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.dpad_button_background_idle)));
-                Dpad4WheelMovement(true, turningModifier);
+                dpad4WheelMovement(true, turningModifier);
             }
 
             return true;
@@ -726,24 +707,36 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public boolean onTouch (View v, MotionEvent event) {
             TankView tv = (TankView)v;
-            float y;
+            float y, x;
             int action = event.getAction();
 
             if ((action == MotionEvent.ACTION_DOWN) || (action == MotionEvent.ACTION_MOVE)) {
+                int[] positionsIndex = new int[] {-1, -1};
                 byte l = 0, r = 0;
 
                 for (int i = 0; i < event.getPointerCount(); i++) {
                     y = -1.0f * (event.getY(i) - tv.mZero) / tv.mRange;
+                    x = event.getX(i);
+                    int cHeld;
 
                     if (y > 1.0f)
                         y = 1.0f;
                     if (y < -1.0f)
                         y = -1.0f;
 
-                    if (event.getX(i) < tv.mWidth / 2f)
+                    if (x < tv.mWidth / 2f) {
                         l = (byte)(y * 100);
-                    else
+                        cHeld = 0;
+                    } else {
                         r = (byte)(y * 100);
+                        cHeld = 1;
+                    }
+
+                    positionsIndex[cHeld] = (int)(y * 4 + 5);
+                    if (positionsIndex[cHeld] < 1)
+                        positionsIndex[cHeld] = 1;
+                    else if (positionsIndex[cHeld] > 8)
+                        positionsIndex[cHeld] = 8;
                 }
 
                 if (mReverse) {
@@ -756,8 +749,11 @@ public class MainActivity extends AppCompatActivity {
                 else
                     mNXTTalker.Motors(r, l, mRegulateSpeed, mSynchronizeMotors);
 
+                tv.drawTouchAction(positionsIndex);
+
             } else if ((action == MotionEvent.ACTION_UP) || (action == MotionEvent.ACTION_CANCEL)) {
                 mNXTTalker.Motors((byte)0, (byte)0, mRegulateSpeed, mSynchronizeMotors);
+                tv.resetTouchActions();
             }
 
             return true;

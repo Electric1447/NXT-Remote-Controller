@@ -24,8 +24,7 @@ public class ChooseDevice extends Activity {
 
     public static String EXTRA_DEVICE_ADDRESS = "device_address";
 
-    private ArrayAdapter<String> mPairedDevicesArrayAdapter;
-    private ArrayAdapter<String> mNewDevicesArrayAdapter;
+    private ArrayAdapter<String> mPairedDevicesArrayAdapter, mNewDevicesArrayAdapter;
     private BluetoothAdapter mBtAdapter;
 
     Button scanButton;
@@ -64,13 +63,11 @@ public class ChooseDevice extends Activity {
 
         boolean empty = true;
 
-        if (pairedDevices.size() > 0) {
-            for (BluetoothDevice device : pairedDevices)
-                if ((device.getBluetoothClass() != null) && (device.getBluetoothClass().getDeviceClass() == BluetoothClass.Device.TOY_ROBOT)) {
-                    mPairedDevicesArrayAdapter.add(device.getName() + "\n" + device.getAddress());
-                    empty = false;
-                }
-        }
+        if (pairedDevices.size() > 0) for (BluetoothDevice device : pairedDevices)
+            if ((device.getBluetoothClass() != null) && (device.getBluetoothClass().getDeviceClass() == BluetoothClass.Device.TOY_ROBOT)) {
+                mPairedDevicesArrayAdapter.add(device.getName() + "\n" + device.getAddress());
+                empty = false;
+            }
 
         if (!empty) {
             findViewById(R.id.title_paired_devices).setVisibility(View.VISIBLE);
@@ -101,10 +98,11 @@ public class ChooseDevice extends Activity {
     }
 
     private OnItemClickListener mDeviceClickListener = new OnItemClickListener() {
-        public void onItemClick (AdapterView<?> av, View v, int arg2, long arg3) {
+        @Override
+        public void onItemClick (AdapterView<?> adapterView, View view, int position, long id) {
             mBtAdapter.cancelDiscovery();
 
-            String info = ((TextView)v).getText().toString();
+            String info = ((TextView)view).getText().toString();
             String address = info.substring(info.length() - 17);
 
             Intent intent = new Intent();
@@ -134,4 +132,5 @@ public class ChooseDevice extends Activity {
             }
         }
     };
+
 }

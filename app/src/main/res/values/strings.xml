@@ -1,6 +1,11 @@
 <resources>
     <string name="app_name">NXT Remote Controller</string>
 
+    <string name="error_generic">An error has occurred.</string>
+    <string name="error_please_wait">Please wait.</string>
+    <string name="error_bt_na">Bluetooth not available.</string>
+    <string name="error_bt_not_enabled">Bluetooth not enabled, exiting.</string>
+
     <string name="menu_buttons">Button controls</string>
     <string name="menu_buttons_4wheel">Button controls (4 Wheels)</string>
     <string name="menu_touchpad">Touchpad controls</string>
@@ -37,4 +42,5 @@
     <string name="settings_opt_syncmotors">Synchronize motors</string>
     <string name="settings_opt_gamepad">Support game controller</string>
 
+    <string name="link_source"><u>Source Code (Github)</u></string>
 </resources>
