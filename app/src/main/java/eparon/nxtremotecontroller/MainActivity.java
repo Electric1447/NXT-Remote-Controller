@@ -37,7 +37,7 @@ import eparon.nxtremotecontroller.View.Tank3MotorView;
 import eparon.nxtremotecontroller.View.TankView;
 import eparon.nxtremotecontroller.View.TouchPadView;
 
-@SuppressLint({"ClickableViewAccessibility", "HandlerLeak"})
+@SuppressLint("ClickableViewAccessibility")
 public class MainActivity extends AppCompatActivity {
 
     public String PREFS_NXT = "NXTPrefsFile";
@@ -318,6 +318,7 @@ public class MainActivity extends AppCompatActivity {
 
     //region Handler
 
+    @SuppressLint("HandlerLeak")
     private final Handler mHandler = new Handler() {
         @Override
         public void handleMessage (Message msg) {
@@ -651,9 +652,9 @@ public class MainActivity extends AppCompatActivity {
 
                 y /= tpv.mRadius;
 
-                float sqrt22 = 0.707106781f;
-                float nx = x * sqrt22 + y * sqrt22;
-                float ny = -x * sqrt22 + y * sqrt22;
+                float sqrt_p5 = 0.707106781f;
+                float nx = x * sqrt_p5 + y * sqrt_p5;
+                float ny = -x * sqrt_p5 + y * sqrt_p5;
 
                 power = (float)Math.sqrt(nx * nx + ny * ny);
                 if (power > 1.0f) {
