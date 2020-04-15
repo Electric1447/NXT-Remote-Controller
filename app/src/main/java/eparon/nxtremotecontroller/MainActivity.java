@@ -370,64 +370,24 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void inputHandler (byte input, int action) {
-        boolean dcm = (mControlsMode == MODE_BUTTONS || mControlsMode == MODE_BUTTONS4WHEEL);
-
         switch (input) {
             case INPUT_FORWARD:
-                if (action == MotionEvent.ACTION_DOWN) {
-                    if (dcm) findViewById(R.id.button_up).setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.dpad_button_background_pressed)));
-                    dpadMovement(false, 1, 1);
-                } else if ((action == MotionEvent.ACTION_UP) || (action == MotionEvent.ACTION_CANCEL)) {
-                    if (dcm) findViewById(R.id.button_up).setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.dpad_button_background_idle)));
-                    dpadMovement(true, 1, 1);
-                }
+                dpadMovement(action, 1, 1, findViewById(R.id.button_up));
                 break;
             case INPUT_REVERSE:
-                if (action == MotionEvent.ACTION_DOWN) {
-                    if (dcm) findViewById(R.id.button_down).setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.dpad_button_background_pressed)));
-                    dpadMovement(false, -1, -1);
-                } else if ((action == MotionEvent.ACTION_UP) || (action == MotionEvent.ACTION_CANCEL)) {
-                    if (dcm) findViewById(R.id.button_down).setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.dpad_button_background_idle)));
-                    dpadMovement(true, -1, -1);
-                }
+                dpadMovement(action, -1, -1, findViewById(R.id.button_down));
                 break;
             case INPUT_LEFT:
-                if (mControlsMode == MODE_BUTTONS4WHEEL) {
-                    if (action == MotionEvent.ACTION_DOWN) {
-                        findViewById(R.id.button_left).setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.dpad_button_background_pressed)));
-                        dpad4WheelMovement(false, 1);
-                    } else if ((action == MotionEvent.ACTION_UP) || (action == MotionEvent.ACTION_CANCEL)) {
-                        findViewById(R.id.button_left).setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.dpad_button_background_idle)));
-                        dpad4WheelMovement(false, 1);
-                    }
-                } else {
-                    if (action == MotionEvent.ACTION_DOWN) {
-                        if (dcm) findViewById(R.id.button_left).setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.dpad_button_background_pressed)));
-                        dpadMovement(false, -0.6, 0.6);
-                    } else if ((action == MotionEvent.ACTION_UP) || (action == MotionEvent.ACTION_CANCEL)) {
-                        if (dcm) findViewById(R.id.button_left).setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.dpad_button_background_idle)));
-                        dpadMovement(true, -0.6, 0.6);
-                    }
-                }
+                if (mControlsMode == MODE_BUTTONS4WHEEL)
+                    dpad4WheelMovement(action, 1, findViewById(R.id.button_left));
+                else
+                    dpadMovement(action, -0.6, 0.6, findViewById(R.id.button_left));
                 break;
             case INPUT_RIGHT:
-                if (mControlsMode == MODE_BUTTONS4WHEEL) {
-                    if (action == MotionEvent.ACTION_DOWN) {
-                        findViewById(R.id.button_right).setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.dpad_button_background_pressed)));
-                        dpad4WheelMovement(false, -1);
-                    } else if ((action == MotionEvent.ACTION_UP) || (action == MotionEvent.ACTION_CANCEL)) {
-                        findViewById(R.id.button_right).setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.dpad_button_background_idle)));
-                        dpad4WheelMovement(true, -1);
-                    }
-                } else {
-                    if (action == MotionEvent.ACTION_DOWN) {
-                        if (dcm) findViewById(R.id.button_right).setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.dpad_button_background_pressed)));
-                        dpadMovement(false, 0.6, -0.6);
-                    } else if ((action == MotionEvent.ACTION_UP) || (action == MotionEvent.ACTION_CANCEL)) {
-                        if (dcm) findViewById(R.id.button_right).setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.dpad_button_background_idle)));
-                        dpadMovement(true, 0.6, -0.6);
-                    }
-                }
+                if (mControlsMode == MODE_BUTTONS4WHEEL)
+                    dpad4WheelMovement(action, -1, findViewById(R.id.button_right));
+                else
+                    dpadMovement(action, 0.6, -0.6, findViewById(R.id.button_right));
                 break;
             default:
                 break;
@@ -536,8 +496,12 @@ public class MainActivity extends AppCompatActivity {
 
     //region DpadMovement
 
-    public void dpadMovement (boolean dispatch, double leftModifier, double rightModifier) {
-        if (!dispatch) {
+    public void dpadMovement (int action, double leftModifier, double rightModifier, View view) {
+        boolean dcm = (mControlsMode == MODE_BUTTONS || mControlsMode == MODE_BUTTONS4WHEEL);
+
+        if (action == MotionEvent.ACTION_DOWN) {
+            if (dcm) view.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.dpad_button_background_pressed)));
+
             byte power = (byte)mPower;
             if (mReverse)
                 power *= -1;
@@ -550,13 +514,16 @@ public class MainActivity extends AppCompatActivity {
             else
                 mNXTTalker.Motors(r, l, mRegulateSpeed, mSynchronizeMotors);
 
-        } else {
+        } else if ((action == MotionEvent.ACTION_UP) || (action == MotionEvent.ACTION_CANCEL)) {
             mNXTTalker.Motors((byte)0, (byte)0, mRegulateSpeed, mSynchronizeMotors);
+            if (dcm) view.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.dpad_button_background_idle)));
         }
     }
 
-    public void dpad4WheelMovement (boolean dispatch, double turningModifier) {
-        if (!dispatch) {
+    public void dpad4WheelMovement (int action, double turningModifier, View view) {
+        if (action == MotionEvent.ACTION_DOWN) {
+            view.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.dpad_button_background_pressed)));
+
             byte power = (byte)mTurningPower;
             if (mReverseLR)
                 power *= -1;
@@ -565,8 +532,9 @@ public class MainActivity extends AppCompatActivity {
 
             mNXTTalker.Motor(0, a, mRegulateSpeed, mSynchronizeMotors);
 
-        } else {
+        } else if ((action == MotionEvent.ACTION_UP) || (action == MotionEvent.ACTION_CANCEL)) {
             mNXTTalker.Motor(0, (byte)0, mRegulateSpeed, mSynchronizeMotors);
+            view.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.dpad_button_background_idle)));
         }
     }
 
@@ -586,18 +554,7 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public boolean onTouch (View v, MotionEvent event) {
-            int action = event.getAction();
-
-            if (action == MotionEvent.ACTION_DOWN) {
-                v.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.dpad_button_background_pressed)));
-
-                dpadMovement(false, leftModifier, rightModifier);
-
-            } else if ((action == MotionEvent.ACTION_UP) || (action == MotionEvent.ACTION_CANCEL)) {
-                v.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.dpad_button_background_idle)));
-                dpadMovement(true, leftModifier, rightModifier);
-            }
-
+            dpadMovement(event.getAction(), leftModifier, rightModifier, v);
             return true;
         }
     }
@@ -612,18 +569,7 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public boolean onTouch (View v, MotionEvent event) {
-            int action = event.getAction();
-
-            if (action == MotionEvent.ACTION_DOWN) {
-                v.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.dpad_button_background_pressed)));
-
-                dpad4WheelMovement(false, turningModifier);
-
-            } else if ((action == MotionEvent.ACTION_UP) || (action == MotionEvent.ACTION_CANCEL)) {
-                v.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.dpad_button_background_idle)));
-                dpad4WheelMovement(true, turningModifier);
-            }
-
+            dpad4WheelMovement(event.getAction(), turningModifier, v);
             return true;
         }
     }
@@ -708,7 +654,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public boolean onTouch (View v, MotionEvent event) {
             TankView tv = (TankView)v;
-            float y, x;
+            float x, y;
             int action = event.getAction();
 
             if ((action == MotionEvent.ACTION_DOWN) || (action == MotionEvent.ACTION_MOVE)) {
@@ -716,8 +662,8 @@ public class MainActivity extends AppCompatActivity {
                 byte l = 0, r = 0;
 
                 for (int i = 0; i < event.getPointerCount(); i++) {
-                    y = -1.0f * (event.getY(i) - tv.mZero) / tv.mRange;
                     x = event.getX(i);
+                    y = -1.0f * (event.getY(i) - tv.mZero) / tv.mRange;
                     int cHeld;
 
                     if (y > 1.0f)
@@ -770,24 +716,35 @@ public class MainActivity extends AppCompatActivity {
             int action = event.getAction();
 
             if ((action == MotionEvent.ACTION_DOWN) || (action == MotionEvent.ACTION_MOVE)) {
+                int[] positionsIndex = new int[] {-1, -1, -1};
                 byte l = 0, r = 0, a = 0;
 
                 for (int i = 0; i < event.getPointerCount(); i++) {
+                    x = event.getX(i);
                     y = -1.0f * (event.getY(i) - t3v.mZero) / t3v.mRange;
+                    int cHeld;
 
                     if (y > 1.0f)
                         y = 1.0f;
                     if (y < -1.0f)
                         y = -1.0f;
 
-                    x = event.getX(i);
-
-                    if (x < t3v.mWidth / 3f)
+                    if (x < t3v.mWidth / 3f) {
                         l = (byte)(y * 100);
-                    else if (x > 2 * t3v.mWidth / 3f)
+                        cHeld = 0;
+                    } else if (x > 2 * t3v.mWidth / 3f) {
                         r = (byte)(y * 100);
-                    else
+                        cHeld = 2;
+                    } else {
                         a = (byte)(y * 100);
+                        cHeld = 1;
+                    }
+
+                    positionsIndex[cHeld] = (int)(y * 4 + 5);
+                    if (positionsIndex[cHeld] < 1)
+                        positionsIndex[cHeld] = 1;
+                    else if (positionsIndex[cHeld] > 8)
+                        positionsIndex[cHeld] = 8;
                 }
 
                 if (mReverse) {
@@ -801,8 +758,11 @@ public class MainActivity extends AppCompatActivity {
                 else
                     mNXTTalker.Motors3(r, l, a, mRegulateSpeed, mSynchronizeMotors);
 
+                t3v.drawTouchAction(positionsIndex);
+
             } else if ((action == MotionEvent.ACTION_UP) || (action == MotionEvent.ACTION_CANCEL)) {
                 mNXTTalker.Motors3((byte)0, (byte)0, (byte)0, mRegulateSpeed, mSynchronizeMotors);
+                t3v.resetTouchActions();
             }
 
             return true;

@@ -96,8 +96,7 @@ public class TankView extends View {
     }
 
     public void resetTouchActions () {
-        this.dtIndex[0] = -1;
-        this.dtIndex[1] = -1;
+        this.dtIndex = new int[] {-1, -1};
         this.invalidate();
     }
 
