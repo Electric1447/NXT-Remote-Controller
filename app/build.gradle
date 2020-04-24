@@ -12,6 +12,7 @@ android {
         versionName "1.2.2"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        resConfigs "en"
     }
 
     buildTypes {
