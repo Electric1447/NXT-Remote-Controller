@@ -18,11 +18,10 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.View.OnTouchListener;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
-import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -83,17 +82,10 @@ public class MainActivity extends AppCompatActivity {
             if (mDeviceAddress != null)
                 mSavedState = NXTTalker.STATE_CONNECTED;
 
-            if (savedInstanceState.containsKey("power"))
-                mPower = savedInstanceState.getInt("power");
-
-            if (savedInstanceState.containsKey("power_turning"))
-                mTurningPower = savedInstanceState.getInt("power_turning");
-
-            if (savedInstanceState.containsKey("controls_mode"))
-                mControlsMode = savedInstanceState.getInt("controls_mode");
-
-            if (savedInstanceState.containsKey("button_controls_mode"))
-                mButtonControlsMode = savedInstanceState.getInt("button_controls_mode");
+            if (savedInstanceState.containsKey("power")) mPower = savedInstanceState.getInt("power");
+            if (savedInstanceState.containsKey("power_turning")) mTurningPower = savedInstanceState.getInt("power_turning");
+            if (savedInstanceState.containsKey("controls_mode")) mControlsMode = savedInstanceState.getInt("controls_mode");
+            if (savedInstanceState.containsKey("button_controls_mode")) mButtonControlsMode = savedInstanceState.getInt("button_controls_mode");
         }
 
         if (!NO_BT) {
@@ -113,36 +105,62 @@ public class MainActivity extends AppCompatActivity {
     //region Activity functions & methods
 
     private void initializeUI () {
-        if (mControlsMode == MODE_BUTTONS || mControlsMode == MODE_BUTTONS4WHEEL) {
-            setContentView(R.layout.activity_main);
+        switch (mControlsMode) {
+            // -------------------------------------- Dpad Modes --------------------------------------- //
+            case MODE_BUTTONS:
+            case MODE_BUTTONS4WHEEL:
+                setContentView(R.layout.activity_main);
 
-            LinearLayout controlsContainer = findViewById(R.id.controls_container);
-            int layoutResID = ((mButtonControlsMode == BUTTONS_MODE_DPAD) ? R.layout.controls_dpad : R.layout.controls_steering);
-            LinearLayout inflatedControls = (LinearLayout)View.inflate(this, layoutResID, null);
-            controlsContainer.addView(inflatedControls);
+                LinearLayout controlsContainer = findViewById(R.id.controls_container);
+                int layoutResID = ((mButtonControlsMode == BUTTONS_MODE_DPAD) ? R.layout.controls_dpad : R.layout.controls_steering);
+                LinearLayout inflatedControls = (LinearLayout)View.inflate(this, layoutResID, null);
+                controlsContainer.addView(inflatedControls);
 
-            findViewById(R.id.button_up).setOnTouchListener(new DirectionButtonOnTouchListener(1, 1));
-            findViewById(R.id.button_down).setOnTouchListener(new DirectionButtonOnTouchListener(-1, -1));
+                ImageButton upButton = findViewById(R.id.button_up);
+                ImageButton downButton = findViewById(R.id.button_down);
+                ImageButton leftButton = findViewById(R.id.button_left);
+                ImageButton rightButton = findViewById(R.id.button_right);
 
-            if (mControlsMode == MODE_BUTTONS) {
-                updateMenu(R.id.menuitem_buttons);
+                upButton.setOnTouchListener((v, event) -> DirectionButtonOnTouchListener(v, event, 1, 1));
+                downButton.setOnTouchListener((v, event) -> DirectionButtonOnTouchListener(v, event, -1, -1));
 
-                findViewById(R.id.button_left).setOnTouchListener(new DirectionButtonOnTouchListener(-0.6, 0.6));
-                findViewById(R.id.button_right).setOnTouchListener(new DirectionButtonOnTouchListener(0.6, -0.6));
-            } else if (mControlsMode == MODE_BUTTONS4WHEEL) {
-                updateMenu(R.id.menuitem_buttons_4wheel);
+                if (mControlsMode == MODE_BUTTONS) {
+                    updateMenu(R.id.menuitem_buttons);
 
-                findViewById(R.id.button_left).setOnTouchListener(new DirectionButton4WheelOnTouchListener(1));
-                findViewById(R.id.button_right).setOnTouchListener(new DirectionButton4WheelOnTouchListener(-1));
+                    leftButton.setOnTouchListener((v, event) -> DirectionButtonOnTouchListener(v, event, -0.6, 0.6));
+                    rightButton.setOnTouchListener((v, event) -> DirectionButtonOnTouchListener(v, event, 0.6, -0.6));
+                } else if (mControlsMode == MODE_BUTTONS4WHEEL) {
+                    updateMenu(R.id.menuitem_buttons_4wheel);
 
-                findViewById(R.id.power_4wheel_layout).setVisibility(View.VISIBLE);
+                    leftButton.setOnTouchListener((v, event) -> DirectionButton4WheelOnTouchListener(v, event, 1));
+                    rightButton.setOnTouchListener((v, event) -> DirectionButton4WheelOnTouchListener(v, event, -1));
 
-                SeekBar turningPowerSeekBar = findViewById(R.id.power_4wheel_seekbar);
-                turningPowerSeekBar.setProgress(mTurningPower);
-                turningPowerSeekBar.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
+                    findViewById(R.id.power_4wheel_layout).setVisibility(View.VISIBLE);
+
+                    SeekBar turningPowerSeekBar = findViewById(R.id.power_4wheel_seekbar);
+                    turningPowerSeekBar.setProgress(mTurningPower);
+                    turningPowerSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+                        @Override
+                        public void onProgressChanged (SeekBar seekBar, int progress, boolean fromUser) {
+                            mTurningPower = progress;
+                        }
+
+                        @Override
+                        public void onStartTrackingTouch (SeekBar seekBar) {
+                        }
+
+                        @Override
+                        public void onStopTrackingTouch (SeekBar seekBar) {
+                        }
+                    });
+                }
+
+                SeekBar powerSeekBar = findViewById(R.id.power_seekbar);
+                powerSeekBar.setProgress(mPower);
+                powerSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
                     @Override
                     public void onProgressChanged (SeekBar seekBar, int progress, boolean fromUser) {
-                        mTurningPower = progress;
+                        mPower = progress;
                     }
 
                     @Override
@@ -153,42 +171,31 @@ public class MainActivity extends AppCompatActivity {
                     public void onStopTrackingTouch (SeekBar seekBar) {
                     }
                 });
-            }
+                break;
+            // ------------------------------------- Touchpad Mode ------------------------------------- //
+            case MODE_TOUCHPAD:
+                setContentView(R.layout.activity_main_touchpad);
+                updateMenu(R.id.menuitem_touchpad);
 
-            SeekBar powerSeekBar = findViewById(R.id.power_seekbar);
-            powerSeekBar.setProgress(mPower);
-            powerSeekBar.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
-                @Override
-                public void onProgressChanged (SeekBar seekBar, int progress, boolean fromUser) {
-                    mPower = progress;
-                }
+                mTouchPadView = findViewById(R.id.touchpad);
+                mTouchPadView.setOnTouchListener(this::TouchpadOnTouchListener);
+                break;
+            // --------------------------------------- Tank Mode --------------------------------------- //
+            case MODE_TANK:
+                setContentView(R.layout.activity_main_tank);
+                updateMenu(R.id.menuitem_tank);
 
-                @Override
-                public void onStartTrackingTouch (SeekBar seekBar) {
-                }
+                mTankView = findViewById(R.id.tank);
+                mTankView.setOnTouchListener(this::TankOnTouchListener);
+                break;
+            // ------------------------------------ Tank3Motor Mode ------------------------------------ //
+            case MODE_TANK3MOTOR:
+                setContentView(R.layout.activity_main_tank3motor);
+                updateMenu(R.id.menuitem_tank3motor);
 
-                @Override
-                public void onStopTrackingTouch (SeekBar seekBar) {
-                }
-            });
-        } else if (mControlsMode == MODE_TOUCHPAD) {
-            setContentView(R.layout.activity_main_touchpad);
-            updateMenu(R.id.menuitem_touchpad);
-
-            mTouchPadView = findViewById(R.id.touchpad);
-            mTouchPadView.setOnTouchListener(new TouchpadOnTouchListener());
-        } else if (mControlsMode == MODE_TANK) {
-            setContentView(R.layout.activity_main_tank);
-            updateMenu(R.id.menuitem_tank);
-
-            mTankView = findViewById(R.id.tank);
-            mTankView.setOnTouchListener(new TankOnTouchListener());
-        } else if (mControlsMode == MODE_TANK3MOTOR) {
-            setContentView(R.layout.activity_main_tank3motor);
-            updateMenu(R.id.menuitem_tank3motor);
-
-            mTank3MotorView = findViewById(R.id.tank3motor);
-            mTank3MotorView.setOnTouchListener(new Tank3MotorOnTouchListener());
+                mTank3MotorView = findViewById(R.id.tank3motor);
+                mTank3MotorView.setOnTouchListener(this::Tank3MotorOnTouchListener);
+                break;
         }
 
         mStateText = findViewById(R.id.state_text);
@@ -496,7 +503,7 @@ public class MainActivity extends AppCompatActivity {
 
     //region DpadMovement
 
-    public void dpadMovement (int action, double leftModifier, double rightModifier, View view) {
+    private void dpadMovement (int action, double leftModifier, double rightModifier, View view) {
         boolean dcm = (mControlsMode == MODE_BUTTONS || mControlsMode == MODE_BUTTONS4WHEEL);
 
         if (action == MotionEvent.ACTION_DOWN) {
@@ -520,7 +527,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void dpad4WheelMovement (int action, double turningModifier, View view) {
+    private void dpad4WheelMovement (int action, double turningModifier, View view) {
         if (action == MotionEvent.ACTION_DOWN) {
             view.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.dpad_button_background_pressed)));
 
@@ -542,231 +549,194 @@ public class MainActivity extends AppCompatActivity {
 
     //region Listeners
 
-    private class DirectionButtonOnTouchListener implements OnTouchListener {
-
-        private double leftModifier;
-        private double rightModifier;
-
-        DirectionButtonOnTouchListener (double l, double r) {
-            leftModifier = l;
-            rightModifier = r;
-        }
-
-        @Override
-        public boolean onTouch (View v, MotionEvent event) {
-            dpadMovement(event.getAction(), leftModifier, rightModifier, v);
-            return true;
-        }
+    private boolean DirectionButtonOnTouchListener (View v, MotionEvent event, double leftModifier, double rightModifier) {
+        dpadMovement(event.getAction(), leftModifier, rightModifier, v);
+        return true;
     }
 
-    private class DirectionButton4WheelOnTouchListener implements OnTouchListener {
-
-        private double turningModifier;
-
-        DirectionButton4WheelOnTouchListener (double a) {
-            turningModifier = a;
-        }
-
-        @Override
-        public boolean onTouch (View v, MotionEvent event) {
-            dpad4WheelMovement(event.getAction(), turningModifier, v);
-            return true;
-        }
+    private boolean DirectionButton4WheelOnTouchListener (View v, MotionEvent event, double turningModifier) {
+        dpad4WheelMovement(event.getAction(), turningModifier, v);
+        return true;
     }
 
-    private class TouchpadOnTouchListener implements OnTouchListener {
+    private boolean TouchpadOnTouchListener (View v, MotionEvent event) {
+        TouchPadView tpv = (TouchPadView)v;
+        float x, y, power;
+        int action = event.getAction();
 
-        @Override
-        public boolean onTouch (View v, MotionEvent event) {
-            TouchPadView tpv = (TouchPadView)v;
-            float x, y, power;
-            int action = event.getAction();
+        if ((action == MotionEvent.ACTION_DOWN) || (action == MotionEvent.ACTION_MOVE)) {
+            x = (event.getX() - tpv.mCx) / tpv.mRadius;
+            y = -1.0f * (event.getY() - tpv.mCy);
 
-            if ((action == MotionEvent.ACTION_DOWN) || (action == MotionEvent.ACTION_MOVE)) {
-                x = (event.getX() - tpv.mCx) / tpv.mRadius;
-                y = -1.0f * (event.getY() - tpv.mCy);
+            if (y > 0f) {
+                y -= tpv.mOffset;
+                if (y < 0f)
+                    y = 0.01f;
+            } else if (y < 0f) {
+                y += tpv.mOffset;
+                if (y > 0f)
+                    y = -0.01f;
+            }
 
-                if (y > 0f) {
-                    y -= tpv.mOffset;
-                    if (y < 0f)
-                        y = 0.01f;
-                } else if (y < 0f) {
-                    y += tpv.mOffset;
-                    if (y > 0f)
-                        y = -0.01f;
-                }
+            y /= tpv.mRadius;
 
-                y /= tpv.mRadius;
+            float sqrt_p5 = 0.707106781f;
+            float nx = x * sqrt_p5 + y * sqrt_p5;
+            float ny = -x * sqrt_p5 + y * sqrt_p5;
 
-                float sqrt_p5 = 0.707106781f;
-                float nx = x * sqrt_p5 + y * sqrt_p5;
-                float ny = -x * sqrt_p5 + y * sqrt_p5;
+            power = (float)Math.sqrt(nx * nx + ny * ny);
+            if (power > 1.0f)
+                power = 1.0f;
 
-                power = (float)Math.sqrt(nx * nx + ny * ny);
-                if (power > 1.0f) {
-                    //nx /= power;
-                    //ny /= power;
-                    power = 1.0f;
-                }
+            float angle = (float)Math.atan2(y, x);
+            float l, r;
 
-                float angle = (float)Math.atan2(y, x);
-                float l, r;
+            if (angle > 0f && angle <= Math.PI / 2f) {
+                l = 1.0f;
+                r = (float)(2.0f * angle / Math.PI);
+            } else if (angle > Math.PI / 2f && angle <= Math.PI) {
+                l = (float)(2.0f * (Math.PI - angle) / Math.PI);
+                r = 1.0f;
+            } else if (angle < 0f && angle >= -Math.PI / 2f) {
+                l = -1.0f;
+                r = (float)(2.0f * angle / Math.PI);
+            } else if (angle < -Math.PI / 2f && angle > -Math.PI) {
+                l = (float)(-2.0f * (angle + Math.PI) / Math.PI);
+                r = -1.0f;
+            } else {
+                l = r = 0f;
+            }
 
-                if (angle > 0f && angle <= Math.PI / 2f) {
-                    l = 1.0f;
-                    r = (float)(2.0f * angle / Math.PI);
-                } else if (angle > Math.PI / 2f && angle <= Math.PI) {
-                    l = (float)(2.0f * (Math.PI - angle) / Math.PI);
-                    r = 1.0f;
-                } else if (angle < 0f && angle >= -Math.PI / 2f) {
-                    l = -1.0f;
-                    r = (float)(2.0f * angle / Math.PI);
-                } else if (angle < -Math.PI / 2f && angle > -Math.PI) {
-                    l = (float)(-2.0f * (angle + Math.PI) / Math.PI);
-                    r = -1.0f;
+            l *= power;
+            r *= power;
+
+            if (mReverse) {
+                l *= -1;
+                r *= -1;
+            }
+
+            if (!mReverseLR)
+                mNXTTalker.Motors((byte)(100 * l), (byte)(100 * r), mRegulateSpeed, mSynchronizeMotors);
+            else
+                mNXTTalker.Motors((byte)(100 * r), (byte)(100 * l), mRegulateSpeed, mSynchronizeMotors);
+
+        } else if ((action == MotionEvent.ACTION_UP) || (action == MotionEvent.ACTION_CANCEL)) {
+            mNXTTalker.Motors((byte)0, (byte)0, mRegulateSpeed, mSynchronizeMotors);
+        }
+
+        return true;
+    }
+
+    private boolean TankOnTouchListener (View v, MotionEvent event) {
+        TankView tv = (TankView)v;
+        float x, y;
+        int action = event.getAction();
+
+        if ((action == MotionEvent.ACTION_DOWN) || (action == MotionEvent.ACTION_MOVE)) {
+            int[] positionsIndex = new int[] {-1, -1};
+            byte l = 0, r = 0;
+
+            for (int i = 0; i < event.getPointerCount(); i++) {
+                x = event.getX(i);
+                y = -1.0f * (event.getY(i) - tv.mZero) / tv.mRange;
+                int cHeld;
+
+                if (y > 1.0f)
+                    y = 1.0f;
+                if (y < -1.0f)
+                    y = -1.0f;
+
+                if (x < tv.mWidth / 2f) {
+                    l = (byte)(y * 100);
+                    cHeld = 0;
                 } else {
-                    l = r = 0f;
+                    r = (byte)(y * 100);
+                    cHeld = 1;
                 }
 
-                l *= power;
-                r *= power;
-
-                if (mReverse) {
-                    l *= -1;
-                    r *= -1;
-                }
-
-                if (!mReverseLR)
-                    mNXTTalker.Motors((byte)(100 * l), (byte)(100 * r), mRegulateSpeed, mSynchronizeMotors);
-                else
-                    mNXTTalker.Motors((byte)(100 * r), (byte)(100 * l), mRegulateSpeed, mSynchronizeMotors);
-
-            } else if ((action == MotionEvent.ACTION_UP) || (action == MotionEvent.ACTION_CANCEL)) {
-                mNXTTalker.Motors((byte)0, (byte)0, mRegulateSpeed, mSynchronizeMotors);
+                positionsIndex[cHeld] = (int)(y * 4 + 5);
+                if (positionsIndex[cHeld] < 1)
+                    positionsIndex[cHeld] = 1;
+                else if (positionsIndex[cHeld] > 8)
+                    positionsIndex[cHeld] = 8;
             }
 
-            return true;
+            if (mReverse) {
+                l *= -1;
+                r *= -1;
+            }
+
+            if (!mReverseLR)
+                mNXTTalker.Motors(l, r, mRegulateSpeed, mSynchronizeMotors);
+            else
+                mNXTTalker.Motors(r, l, mRegulateSpeed, mSynchronizeMotors);
+
+            tv.drawTouchAction(positionsIndex);
+
+        } else if ((action == MotionEvent.ACTION_UP) || (action == MotionEvent.ACTION_CANCEL)) {
+            mNXTTalker.Motors((byte)0, (byte)0, mRegulateSpeed, mSynchronizeMotors);
+            tv.resetTouchActions();
         }
+
+        return true;
     }
 
-    private class TankOnTouchListener implements OnTouchListener {
+    private boolean Tank3MotorOnTouchListener (View v, MotionEvent event) {
+        Tank3MotorView t3v = (Tank3MotorView)v;
+        float x, y;
+        int action = event.getAction();
 
-        @Override
-        public boolean onTouch (View v, MotionEvent event) {
-            TankView tv = (TankView)v;
-            float x, y;
-            int action = event.getAction();
+        if ((action == MotionEvent.ACTION_DOWN) || (action == MotionEvent.ACTION_MOVE)) {
+            int[] positionsIndex = new int[] {-1, -1, -1};
+            byte l = 0, r = 0, a = 0;
 
-            if ((action == MotionEvent.ACTION_DOWN) || (action == MotionEvent.ACTION_MOVE)) {
-                int[] positionsIndex = new int[] {-1, -1};
-                byte l = 0, r = 0;
+            for (int i = 0; i < event.getPointerCount(); i++) {
+                x = event.getX(i);
+                y = -1.0f * (event.getY(i) - t3v.mZero) / t3v.mRange;
+                int cHeld;
 
-                for (int i = 0; i < event.getPointerCount(); i++) {
-                    x = event.getX(i);
-                    y = -1.0f * (event.getY(i) - tv.mZero) / tv.mRange;
-                    int cHeld;
+                if (y > 1.0f)
+                    y = 1.0f;
+                if (y < -1.0f)
+                    y = -1.0f;
 
-                    if (y > 1.0f)
-                        y = 1.0f;
-                    if (y < -1.0f)
-                        y = -1.0f;
-
-                    if (x < tv.mWidth / 2f) {
-                        l = (byte)(y * 100);
-                        cHeld = 0;
-                    } else {
-                        r = (byte)(y * 100);
-                        cHeld = 1;
-                    }
-
-                    positionsIndex[cHeld] = (int)(y * 4 + 5);
-                    if (positionsIndex[cHeld] < 1)
-                        positionsIndex[cHeld] = 1;
-                    else if (positionsIndex[cHeld] > 8)
-                        positionsIndex[cHeld] = 8;
+                if (x < t3v.mWidth / 3f) {
+                    l = (byte)(y * 100);
+                    cHeld = 0;
+                } else if (x > 2 * t3v.mWidth / 3f) {
+                    r = (byte)(y * 100);
+                    cHeld = 2;
+                } else {
+                    a = (byte)(y * 100);
+                    cHeld = 1;
                 }
 
-                if (mReverse) {
-                    l *= -1;
-                    r *= -1;
-                }
-
-                if (!mReverseLR)
-                    mNXTTalker.Motors(l, r, mRegulateSpeed, mSynchronizeMotors);
-                else
-                    mNXTTalker.Motors(r, l, mRegulateSpeed, mSynchronizeMotors);
-
-                tv.drawTouchAction(positionsIndex);
-
-            } else if ((action == MotionEvent.ACTION_UP) || (action == MotionEvent.ACTION_CANCEL)) {
-                mNXTTalker.Motors((byte)0, (byte)0, mRegulateSpeed, mSynchronizeMotors);
-                tv.resetTouchActions();
+                positionsIndex[cHeld] = (int)(y * 4 + 5);
+                if (positionsIndex[cHeld] < 1)
+                    positionsIndex[cHeld] = 1;
+                else if (positionsIndex[cHeld] > 8)
+                    positionsIndex[cHeld] = 8;
             }
 
-            return true;
-        }
-    }
-
-    private class Tank3MotorOnTouchListener implements OnTouchListener {
-
-        @Override
-        public boolean onTouch (View v, MotionEvent event) {
-            Tank3MotorView t3v = (Tank3MotorView)v;
-            float x, y;
-            int action = event.getAction();
-
-            if ((action == MotionEvent.ACTION_DOWN) || (action == MotionEvent.ACTION_MOVE)) {
-                int[] positionsIndex = new int[] {-1, -1, -1};
-                byte l = 0, r = 0, a = 0;
-
-                for (int i = 0; i < event.getPointerCount(); i++) {
-                    x = event.getX(i);
-                    y = -1.0f * (event.getY(i) - t3v.mZero) / t3v.mRange;
-                    int cHeld;
-
-                    if (y > 1.0f)
-                        y = 1.0f;
-                    if (y < -1.0f)
-                        y = -1.0f;
-
-                    if (x < t3v.mWidth / 3f) {
-                        l = (byte)(y * 100);
-                        cHeld = 0;
-                    } else if (x > 2 * t3v.mWidth / 3f) {
-                        r = (byte)(y * 100);
-                        cHeld = 2;
-                    } else {
-                        a = (byte)(y * 100);
-                        cHeld = 1;
-                    }
-
-                    positionsIndex[cHeld] = (int)(y * 4 + 5);
-                    if (positionsIndex[cHeld] < 1)
-                        positionsIndex[cHeld] = 1;
-                    else if (positionsIndex[cHeld] > 8)
-                        positionsIndex[cHeld] = 8;
-                }
-
-                if (mReverse) {
-                    l *= -1;
-                    r *= -1;
-                    a *= -1;
-                }
-
-                if (!mReverseLR)
-                    mNXTTalker.Motors3(l, r, a, mRegulateSpeed, mSynchronizeMotors);
-                else
-                    mNXTTalker.Motors3(r, l, a, mRegulateSpeed, mSynchronizeMotors);
-
-                t3v.drawTouchAction(positionsIndex);
-
-            } else if ((action == MotionEvent.ACTION_UP) || (action == MotionEvent.ACTION_CANCEL)) {
-                mNXTTalker.Motors3((byte)0, (byte)0, (byte)0, mRegulateSpeed, mSynchronizeMotors);
-                t3v.resetTouchActions();
+            if (mReverse) {
+                l *= -1;
+                r *= -1;
+                a *= -1;
             }
 
-            return true;
+            if (!mReverseLR)
+                mNXTTalker.Motors3(l, r, a, mRegulateSpeed, mSynchronizeMotors);
+            else
+                mNXTTalker.Motors3(r, l, a, mRegulateSpeed, mSynchronizeMotors);
+
+            t3v.drawTouchAction(positionsIndex);
+
+        } else if ((action == MotionEvent.ACTION_UP) || (action == MotionEvent.ACTION_CANCEL)) {
+            mNXTTalker.Motors3((byte)0, (byte)0, (byte)0, mRegulateSpeed, mSynchronizeMotors);
+            t3v.resetTouchActions();
         }
+
+        return true;
     }
 
     //endregion

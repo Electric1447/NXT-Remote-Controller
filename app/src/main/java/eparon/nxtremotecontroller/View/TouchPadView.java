@@ -10,16 +10,16 @@ import android.view.View;
 
 public class TouchPadView extends View {
 
-    public TouchPadView (Context context, AttributeSet attrs, int defStyle) {
-        super(context, attrs, defStyle);
+    public TouchPadView (Context context) {
+        super(context);
     }
 
     public TouchPadView (Context context, AttributeSet attrs) {
         super(context, attrs);
     }
 
-    public TouchPadView (Context context) {
-        super(context);
+    public TouchPadView (Context context, AttributeSet attrs, int defStyle) {
+        super(context, attrs, defStyle);
     }
 
     public float mCx, mCy;

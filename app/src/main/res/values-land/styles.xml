@@ -1,7 +1,6 @@
 <resources>
 
     <style name="AppTheme" parent="Theme.AppCompat">
-        <!-- Customize your theme here. -->
         <item name="colorPrimary">@android:color/transparent</item>
         <item name="colorPrimaryDark">@android:color/transparent</item>
         <item name="colorAccent">@color/colorAccent</item>
@@ -14,11 +13,8 @@
     </style>
 
     <style name="BluetoothDialogStyle" parent="Theme.AppCompat.Light.Dialog">
-        <!-- Used for the buttons -->
         <item name="colorAccent">@color/colorAccent</item>
-        <!-- Used for the title and text -->
         <item name="android:textColorPrimary">#FFFFFF</item>
-        <!-- Used for the background -->
         <item name="android:background">#3F3F3F</item>
     </style>
 

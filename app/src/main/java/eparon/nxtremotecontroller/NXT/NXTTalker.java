@@ -92,6 +92,8 @@ public class NXTTalker {
         setState(STATE_NONE);
     }
 
+    //region Motor Commands
+
     public void Motor (int motor, byte power, boolean speedReg, boolean motorSync) {
         byte[] data = {0x0c, 0x00, (byte)0x80, 0x04, 0x00, 0x32, 0x07, 0x00, 0x00, 0x20, 0x00, 0x00, 0x00, 0x00};
 
@@ -152,6 +154,8 @@ public class NXTTalker {
 
         Write(data);
     }
+
+    //endregion
 
     private void Write (byte[] out) {
         ConnectedThread r;
