@@ -1,7 +1,5 @@
 package eparon.nxtremotecontroller;
 
-import java.util.Set;
-
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothClass;
@@ -17,7 +15,8 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.AdapterView.OnItemClickListener;
+
+import java.util.Set;
 
 public class ChooseDevice extends Activity {
 
@@ -46,11 +45,11 @@ public class ChooseDevice extends Activity {
 
         ListView pairedListView = findViewById(R.id.paired_devices);
         pairedListView.setAdapter(mPairedDevicesArrayAdapter);
-        pairedListView.setOnItemClickListener(mDeviceClickListener);
+        pairedListView.setOnItemClickListener(this::mDeviceClickListener);
 
         ListView newDevicesListView = findViewById(R.id.new_devices);
         newDevicesListView.setAdapter(mNewDevicesArrayAdapter);
-        newDevicesListView.setOnItemClickListener(mDeviceClickListener);
+        newDevicesListView.setOnItemClickListener(this::mDeviceClickListener);
 
         this.registerReceiver(mReceiver, new IntentFilter(BluetoothDevice.ACTION_FOUND));
         this.registerReceiver(mReceiver, new IntentFilter(BluetoothAdapter.ACTION_DISCOVERY_FINISHED));
@@ -95,21 +94,18 @@ public class ChooseDevice extends Activity {
             findViewById(R.id.no_devices).setVisibility(View.VISIBLE);
     }
 
-    private OnItemClickListener mDeviceClickListener = new OnItemClickListener() {
-        @Override
-        public void onItemClick (AdapterView<?> adapterView, View view, int position, long id) {
-            mBtAdapter.cancelDiscovery();
+    private void mDeviceClickListener (AdapterView<?> adapterView, View view, int position, long id) {
+        mBtAdapter.cancelDiscovery();
 
-            String info = ((TextView)view).getText().toString();
-            String address = info.substring(info.length() - 17);
+        String info = ((TextView)view).getText().toString();
+        String address = info.substring(info.length() - 17);
 
-            Intent intent = new Intent();
-            intent.putExtra(EXTRA_DEVICE_ADDRESS, address);
+        Intent intent = new Intent();
+        intent.putExtra(EXTRA_DEVICE_ADDRESS, address);
 
-            setResult(Activity.RESULT_OK, intent);
-            finish();
-        }
-    };
+        setResult(Activity.RESULT_OK, intent);
+        finish();
+    }
 
     private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
         @Override

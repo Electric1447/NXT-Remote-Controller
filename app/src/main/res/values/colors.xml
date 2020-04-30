@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#6200EE</color>
+    <color name="colorPrimary">#27005F</color>
     <color name="colorPrimaryDark">#27005F</color>
     <color name="colorAccent">#FF5C29</color>
+
+    <color name="dialogTextColorPrimary">#FFFFFF</color>
+    <color name="dialogBackground">#3F3F3F</color>
 
     <color name="dpad_button_background_idle">#5A5A5A</color>
     <color name="dpad_button_background_pressed">#A5A5A5</color>>

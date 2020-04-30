@@ -10,6 +10,7 @@ import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
 import android.content.res.Configuration;
 import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -27,6 +28,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 
 import java.util.Objects;
@@ -51,17 +53,13 @@ public class MainActivity extends AppCompatActivity {
     NXTTalker mNXTTalker;
 
     int mState = NXTTalker.STATE_NONE, mSavedState = NXTTalker.STATE_NONE;
-    private boolean mNewLaunch = true, NO_BT = false;
+    private boolean NO_BT = false, mNewLaunch = true;
     String mDeviceAddress = null;
 
     TextView mStateText;
     Switch mButtonModeSwitch;
     Button mConnectionButton;
     Menu mMenu;
-
-    TankView mTankView;
-    TouchPadView mTouchPadView;
-    Tank3MotorView mTank3MotorView;
 
     int mPower = 80, mTurningPower = 60;
     int mControlsMode = MODE_BUTTONS, mButtonControlsMode = BUTTONS_MODE_DPAD;
@@ -105,6 +103,14 @@ public class MainActivity extends AppCompatActivity {
     //region Activity functions & methods
 
     private void initializeUI () {
+        int orientation = this.getResources().getConfiguration().orientation;
+        ActionBar actionBar = getSupportActionBar();
+        assert actionBar != null;
+        if (orientation == Configuration.ORIENTATION_LANDSCAPE)
+            actionBar.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        else
+            actionBar.setBackgroundDrawable(new ColorDrawable(getResources().getColor(R.color.colorPrimaryDark)));
+
         switch (mControlsMode) {
             // -------------------------------------- Dpad Modes --------------------------------------- //
             case MODE_BUTTONS:
@@ -176,24 +182,21 @@ public class MainActivity extends AppCompatActivity {
             case MODE_TOUCHPAD:
                 setContentView(R.layout.activity_main_touchpad);
                 updateMenu(R.id.menuitem_touchpad);
-
-                mTouchPadView = findViewById(R.id.touchpad);
+                TouchPadView mTouchPadView = findViewById(R.id.touchpad);
                 mTouchPadView.setOnTouchListener(this::TouchpadOnTouchListener);
                 break;
             // --------------------------------------- Tank Mode --------------------------------------- //
             case MODE_TANK:
                 setContentView(R.layout.activity_main_tank);
                 updateMenu(R.id.menuitem_tank);
-
-                mTankView = findViewById(R.id.tank);
+                TankView mTankView = findViewById(R.id.tank);
                 mTankView.setOnTouchListener(this::TankOnTouchListener);
                 break;
             // ------------------------------------ Tank3Motor Mode ------------------------------------ //
             case MODE_TANK3MOTOR:
                 setContentView(R.layout.activity_main_tank3motor);
                 updateMenu(R.id.menuitem_tank3motor);
-
-                mTank3MotorView = findViewById(R.id.tank3motor);
+                Tank3MotorView mTank3MotorView = findViewById(R.id.tank3motor);
                 mTank3MotorView.setOnTouchListener(this::Tank3MotorOnTouchListener);
                 break;
         }
@@ -226,16 +229,14 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        if (mButtonModeSwitch == null) {
+        if (mButtonModeSwitch == null || !(mControlsMode == MODE_BUTTONS || mControlsMode == MODE_BUTTONS4WHEEL)) {
             Toast.makeText(this, getString(R.string.error_generic), Toast.LENGTH_LONG).show();
             return;
         }
 
-        if (mControlsMode == MODE_BUTTONS || mControlsMode == MODE_BUTTONS4WHEEL) {
-            mButtonModeSwitch.setChecked(!mButtonModeSwitch.isChecked());
-            mButtonControlsMode = mButtonModeSwitch.isChecked() ? BUTTONS_MODE_STEERING : BUTTONS_MODE_DPAD;
-            initializeUI();
-        }
+        mButtonModeSwitch.setChecked(!mButtonModeSwitch.isChecked());
+        mButtonControlsMode = mButtonModeSwitch.isChecked() ? BUTTONS_MODE_STEERING : BUTTONS_MODE_DPAD;
+        initializeUI();
     }
 
     private void displayState () {
@@ -347,7 +348,7 @@ public class MainActivity extends AppCompatActivity {
 
         boolean handled = false;
 
-        if (event.getRepeatCount() <= 10 || (event.getRepeatCount() % 10 == 0))
+        if ((event.getRepeatCount() <= 10) || (event.getRepeatCount() % 10 == 0))
             switch (event.getKeyCode()) {
                 case KeyEvent.KEYCODE_BUTTON_A:
                 case KeyEvent.KEYCODE_BUTTON_R2:
@@ -451,7 +452,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    public void onConfigurationChanged (@NonNull Configuration newConfig) {
+    public void onConfigurationChanged (Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
         initializeUI();
     }
@@ -657,7 +658,7 @@ public class MainActivity extends AppCompatActivity {
                 positionsIndex[cHeld] = (int)(y * 4 + 5);
                 if (positionsIndex[cHeld] < 1)
                     positionsIndex[cHeld] = 1;
-                else if (positionsIndex[cHeld] > 8)
+                if (positionsIndex[cHeld] > 8)
                     positionsIndex[cHeld] = 8;
             }
 
@@ -714,7 +715,7 @@ public class MainActivity extends AppCompatActivity {
                 positionsIndex[cHeld] = (int)(y * 4 + 5);
                 if (positionsIndex[cHeld] < 1)
                     positionsIndex[cHeld] = 1;
-                else if (positionsIndex[cHeld] > 8)
+                if (positionsIndex[cHeld] > 8)
                     positionsIndex[cHeld] = 8;
             }
 
