@@ -20,7 +20,7 @@ public class Settings extends AppCompatActivity {
     public String PREFS_NXT = "NXTPrefsFile";
     SharedPreferences prefs;
 
-    public String githubURL = "https://github.com/Electric1447/NXT-Remote-Controller";
+    public static String githubURL = "https://github.com/Electric1447/NXT-Remote-Controller";
 
     boolean swapFWDREV = false, swapLeftRight = false, regulateSpeed = false, syncMotors = false, gamepad = true;
     CheckBox fwdrevCB, swapLeftRightCB, regSpeedCB, syncMotorsCB, gamepadCB;
@@ -138,9 +138,13 @@ public class Settings extends AppCompatActivity {
 
     //endregion
 
+    //region GOTO functions
+
     public void gotoSource (View view) {
         ((TextView)view).setTextColor(getResources().getColor(R.color.hyperlink_clicked));
         startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(githubURL)));
     }
+
+    //endregion
 
 }
