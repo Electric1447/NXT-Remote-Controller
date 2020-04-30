@@ -22,6 +22,7 @@ public class TankViewVertical extends TankView {
         return 0.4f;
     }
 
+    @Override
     protected float lineThickness () {
         return 6f;
     }
