@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     package="eparon.nxtremotecontroller"
-    tools:ignore="LockedOrientationActivity">
+    tools:ignore="LockedOrientationActivity,AllowBackup">
 
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
@@ -12,8 +12,7 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="false"
-        android:theme="@style/AppTheme"
-        tools:ignore="AllowBackup">
+        android:theme="@style/AppTheme">
 
         <activity
             android:name=".MainActivity"
