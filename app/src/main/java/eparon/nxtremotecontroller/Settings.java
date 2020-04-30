@@ -71,7 +71,7 @@ public class Settings extends AppCompatActivity {
         gamepadCB = findViewById(R.id.cbGamepad);
         gamepadCB.setChecked(gamepad);
 
-        ((TextView)findViewById(R.id.ver)).setText(String.format("%s v%s\nCreated by Itai Levin.\n\nbased on nxt-remote-control\nby Jacek Fedoryński (jfedor2)\n", getString(R.string.app_name), BuildConfig.VERSION_NAME)); // Set version TextView.
+        ((TextView)findViewById(R.id.ver)).setText(String.format("%s v%s\nCreated by Itai Levin (Electric1447).\n\nbased on nxt-remote-control\nby Jacek Fedoryński (jfedor2)\n", getString(R.string.app_name), BuildConfig.VERSION_NAME)); // Set version TextView.
     }
 
     public void cbPrefOnClick (View view) {
