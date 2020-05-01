@@ -34,7 +34,6 @@
         <activity
             android:name=".Settings"
             android:label="Settings"
-            android:theme="@style/SettingsTheme"
             android:windowSoftInputMode="adjustPan" />
 
     </application>

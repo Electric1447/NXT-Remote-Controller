@@ -7,7 +7,10 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -15,12 +18,15 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import java.util.Objects;
 
-public class Settings extends AppCompatActivity {
+public class Settings extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
 
     public String PREFS_NXT = "NXTPrefsFile";
     SharedPreferences prefs;
 
     public static String githubURL = "https://github.com/Electric1447/NXT-Remote-Controller";
+
+    int defConMode = MainActivity.MODE_BUTTONS;
+    Spinner conModeSpinner;
 
     boolean swapFWDREV = false, swapLeftRight = false, regulateSpeed = false, syncMotors = false, gamepad = true;
     CheckBox fwdrevCB, swapLeftRightCB, regSpeedCB, syncMotorsCB, gamepadCB;
@@ -52,6 +58,7 @@ public class Settings extends AppCompatActivity {
             if (savedInstanceState.containsKey("set_rSpeed")) regulateSpeed = savedInstanceState.getBoolean("set_rSpeed");
             if (savedInstanceState.containsKey("set_syncMo")) syncMotors = savedInstanceState.getBoolean("set_syncMo");
             if (savedInstanceState.containsKey("set_gamepd")) gamepad = savedInstanceState.getBoolean("set_gamepd");
+            if (savedInstanceState.containsKey("set_conmod")) defConMode = savedInstanceState.getInt("set_conmod");
         }
 
         initializeViews();
@@ -60,6 +67,13 @@ public class Settings extends AppCompatActivity {
     //region UI & onClick functions
 
     private void initializeViews () {
+        conModeSpinner = findViewById(R.id.conmode_spinner);
+        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this, R.array.conmode_array, R.layout.spinner_item);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        conModeSpinner.setAdapter(adapter);
+        conModeSpinner.setOnItemSelectedListener(this);
+        conModeSpinner.setSelection(defConMode - 1);
+
         fwdrevCB = findViewById(R.id.cbFWDREV);
         fwdrevCB.setChecked(swapFWDREV);
         swapLeftRightCB = findViewById(R.id.cbLeftRight);
@@ -99,6 +113,15 @@ public class Settings extends AppCompatActivity {
         return cb.isChecked();
     }
 
+    @Override
+    public void onItemSelected (AdapterView<?> parent, View view, int position, long id) {
+        defConMode = position + 1;
+    }
+
+    @Override
+    public void onNothingSelected (AdapterView<?> parent) {
+    }
+
     //endregion
 
     //region Save/Load
@@ -110,6 +133,7 @@ public class Settings extends AppCompatActivity {
         editor.putBoolean("regulateSpeed", regulateSpeed);
         editor.putBoolean("syncMotors", syncMotors);
         editor.putBoolean("gamepad", gamepad);
+        editor.putInt("defconmode", defConMode);
         editor.apply();
         startActivity(new Intent(Settings.this, MainActivity.class));
     }
@@ -124,6 +148,7 @@ public class Settings extends AppCompatActivity {
         regulateSpeed = prefs.getBoolean("regulateSpeed", regulateSpeed);
         syncMotors = prefs.getBoolean("syncMotors", syncMotors);
         gamepad = prefs.getBoolean("gamepad", gamepad);
+        defConMode = prefs.getInt("defconmode", defConMode);
     }
 
     @Override
@@ -134,6 +159,7 @@ public class Settings extends AppCompatActivity {
         outState.putBoolean("set_rSpeed", regulateSpeed);
         outState.putBoolean("set_syncMo", syncMotors);
         outState.putBoolean("set_gamepd", gamepad);
+        outState.putInt("set_conmod", defConMode);
     }
 
     //endregion

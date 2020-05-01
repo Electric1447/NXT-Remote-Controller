@@ -38,9 +38,18 @@
 
     <string name="settings_opt_swap_fr">Swap forward/reverse</string>
     <string name="settings_opt_swap_lr">Swap left/right</string>
+    <string name="settings_opt_con_mode">Default Controls Mode</string>
     <string name="settings_opt_regspeed">Regulate speed</string>
     <string name="settings_opt_syncmotors">Synchronize motors</string>
     <string name="settings_opt_gamepad">Support game controller</string>
 
     <string name="link_source"><u>Source Code (Github)</u></string>
+
+    <string-array name="conmode_array">
+        <item>Directional Pad</item>
+        <item>4 Wheels Dpad</item>
+        <item>Touchpad </item>
+        <item>Tank controls</item>
+        <item>Tank 3 Motors</item>
+    </string-array>
 </resources>

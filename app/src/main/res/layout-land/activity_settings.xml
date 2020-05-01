@@ -94,6 +94,34 @@
 
                 </RelativeLayout>
 
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingLeft="20dp"
+                    android:paddingTop="6dp"
+                    android:paddingBottom="8dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentLeft="true"
+                        android:layout_centerVertical="true"
+                        android:paddingBottom="2dp"
+                        android:text="@string/settings_opt_con_mode"
+                        android:textColor="#FFF"
+                        android:textSize="16sp" />
+
+                    <Spinner
+                        android:id="@+id/conmode_spinner"
+                        style="?attr/spinnerDropDownItemStyle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentRight="true"
+                        android:layout_centerVertical="true"
+                        android:entries="@array/conmode_array" />
+
+                </RelativeLayout>
+
             </LinearLayout>
 
             <TextView

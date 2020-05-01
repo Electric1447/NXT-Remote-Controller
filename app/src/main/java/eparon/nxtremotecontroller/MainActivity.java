@@ -96,6 +96,9 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
+        if (mNewLaunch)
+            mControlsMode = prefs.getInt("defconmode", MainActivity.MODE_BUTTONS);
+
         initializeUI();
         mNXTTalker = new NXTTalker(mHandler);
     }
