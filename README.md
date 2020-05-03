@@ -23,8 +23,8 @@ Based on https://github.com/jfedor2/nxt-remote-control.
 - Lego Mindstroms NXT brick.
 
 ### Screenshots & Demos:
-<img src="https://i.imgur.com/d98QrWe.png" width="200"> <img src="https://i.imgur.com/4GXXT2n.png" width="200"> <img src="https://i.imgur.com/QHGKy5w.png" width="200"> <img src="https://i.imgur.com/cXCcRyr.png" width="200"> &nbsp;
+<img src="https://i.imgur.com/d98QrWe.png" width="200"> <img src="https://i.imgur.com/4GXXT2n.png" width="200"> <img src="https://i.imgur.com/QHGKy5w.png" width="200"> <img src="https://i.imgur.com/yN57RtQ.png" width="200"> &nbsp;
 
-<img src="https://i.imgur.com/oQGDphw.png" width="200"> <img src="https://i.imgur.com/8KUb3xU.png" width="200"> <img src="https://i.imgur.com/XVwoCPZ.png" width="200"> &nbsp;
+<img src="https://i.imgur.com/oQGDphw.png" width="200"> <img src="https://i.imgur.com/8KUb3xU.png" width="200"> <img src="https://i.imgur.com/jcsfWs8.png" width="200"> &nbsp;
 
 <img src="https://i.imgur.com/M7gLTrE.png" width="360"> <img src="https://i.imgur.com/oir3tnU.png" width="360"> <img src="https://i.imgur.com/Hpi2dtJ.png" width="360">

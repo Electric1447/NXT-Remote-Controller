@@ -1,3 +1,9 @@
+## NXT Remote Controller v1.3.1_01
+- Updated Touchpad mode.
+
+&nbsp;
+
+
 ## NXT Remote Controller v1.3.1
 - Added link to releases page in settings.
 

@@ -10,29 +10,38 @@ import android.view.View;
 
 public class TouchPadView extends View {
 
-    public TouchPadView (Context context) {
-        super(context);
-    }
-
-    public TouchPadView (Context context, AttributeSet attrs) {
-        super(context, attrs);
-    }
-
-    public TouchPadView (Context context, AttributeSet attrs, int defStyle) {
-        super(context, attrs, defStyle);
-    }
+    private Paint paint;
 
     public float mCx, mCy;
     public float mRadius;
     public float mOffset;
 
+    public TouchPadView (Context context) {
+        super(context);
+        paint = new Paint();
+    }
+
+    public TouchPadView (Context context, AttributeSet attrs) {
+        super(context, attrs);
+        paint = new Paint();
+    }
+
+    public TouchPadView (Context context, AttributeSet attrs, int defStyle) {
+        super(context, attrs, defStyle);
+        paint = new Paint();
+    }
+
+    protected float lineThickness () {
+        return 4f;
+    }
+
     @SuppressLint("DrawAllocation")
     @Override
     protected void onDraw (Canvas canvas) {
-        canvas.drawRGB(0, 0, 0);
-        Paint paint = new Paint();
+        canvas.drawARGB(0, 0, 0, 0);
         paint.setColor(0xff00ff00);
         paint.setStyle(Paint.Style.STROKE);
+        paint.setStrokeWidth(lineThickness());
 
         for (int i = 1; i <= 6; i++) {
             canvas.drawArc(new RectF(mCx - mRadius * i / 6.0f, mCy - mOffset - mRadius * i / 6.0f, mCx + mRadius * i / 6.0f, mCy - mOffset + mRadius * i / 6.0f), 180f, 180f, false, paint);
