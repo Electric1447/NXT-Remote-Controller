@@ -14,7 +14,6 @@ import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -588,7 +587,7 @@ public class MainActivity extends AppCompatActivity {
 
             byte l = (byte)(power * leftModifier);
             byte r = (byte)(power * rightModifier);
-            Log.d("MOTORTEST", "L: " + l + ";  R: " + r + ";");
+
             if (!mReverseLR)
                 mNXTTalker.Motors(l, r, mRegulateSpeed, mSynchronizeMotors);
             else
@@ -609,7 +608,7 @@ public class MainActivity extends AppCompatActivity {
                 power *= -1;
 
             byte a = (byte)(power * actionModifier);
-            Log.d("MOTORTEST", "A: " + a + ";");
+
             mNXTTalker.Motor(0, a, mRegulateSpeed, mSynchronizeMotors);
 
         } else if ((action == MotionEvent.ACTION_UP) || (action == MotionEvent.ACTION_CANCEL)) {
