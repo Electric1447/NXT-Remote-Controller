@@ -17,6 +17,7 @@
 
     <string name="menu_settings_sourcecode" >Sourcecode</string>
     <string name="menu_settings_changelog"  >Changelog</string>
+    <string name="menu_settings_release"    >Download Page</string>
 
     <string name="power_power"   >Power:</string>
     <string name="power_turning" >Turning Power:</string>
@@ -49,9 +50,6 @@
     <string name="settings_opt_regspeed"   >Regulate speed</string>
     <string name="settings_opt_syncmotors" >Synchronize motors</string>
     <string name="settings_opt_gamepad"    >Support game controller</string>
-
-    <string name="link_changelog">Changelog</string>
-    <string name="link_source"><u>Source Code</u></string>
 
     <string-array name="conmode_array">
         <item>Dpad (Regular)</item>

@@ -1,3 +1,8 @@
+## NXT Remote Controller v1.3.1
+- Added link to releases page in settings.
+
+&nbsp;
+
 ## NXT Remote Controller v1.3.0
 - Added 6 Buttons Dpad Control Mode.
 - Major UI improvements.

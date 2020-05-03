@@ -30,6 +30,7 @@ public class Settings extends AppCompatActivity implements AdapterView.OnItemSel
     SharedPreferences prefs;
 
     public static String sourcecodeURL = "https://github.com/Electric1447/NXT-Remote-Controller";
+    public static String releasesURL = "https://github.com/Electric1447/NXT-Remote-Controller/releases";
 
     Menu mMenu;
 
@@ -94,7 +95,7 @@ public class Settings extends AppCompatActivity implements AdapterView.OnItemSel
         if (this.getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
             LinearLayout sideLinearLayout = findViewById(R.id.side_ll);
             sideLinearLayout.measure(0, 0);
-            findViewById(R.id.main_ll).setPadding(0, 0, (int)(sideLinearLayout.getMeasuredWidth() * 1.2f), 0);
+            findViewById(R.id.main_ll).setPadding((int)(sideLinearLayout.getMeasuredWidth() * 0.04f), 0, (int)(sideLinearLayout.getMeasuredWidth() * 1.2f), 0);
         }
     }
 
@@ -206,6 +207,9 @@ public class Settings extends AppCompatActivity implements AdapterView.OnItemSel
                 else
                     Toast.makeText(this, R.string.error_internet_connection, Toast.LENGTH_SHORT).show();
                 break;
+            case R.id.menu_ab_release:
+            case R.id.menu_item_release:
+                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(releasesURL)));
             default:
                 return false;
         }
