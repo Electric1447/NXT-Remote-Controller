@@ -14,13 +14,13 @@ import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
-import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.Switch;
@@ -45,8 +45,8 @@ public class MainActivity extends AppCompatActivity {
     SharedPreferences prefs;
 
     static final int REQUEST_ENABLE_BT = 1, REQUEST_CONNECT_DEVICE = 2, REQUEST_SETTINGS = 3;
-    static final int MODE_BUTTONS = 1, MODE_BUTTONS4WHEEL = 2, MODE_TOUCHPAD = 3, MODE_TANK = 4, MODE_TANK3MOTOR = 5;
-    static final int BUTTONS_MODE_DPAD = 1, BUTTONS_MODE_STEERING = 2;
+    static final int MODE_DPAD_REGULAR = 1, MODE_DPAD_RACECAR = 2, MODE_DPAD_6BUTTON = 3, MODE_TOUCHPAD = 4, MODE_TANK = 5, MODE_TANK_3MOTOR = 6;
+    static final int DPAD_MODE_REGULAR = 1, DPAD_MODE_STEERING = 2;
     static final byte INPUT_FORWARD = 0x18, INPUT_REVERSE = 0x19, INPUT_LEFT = 0x1f, INPUT_RIGHT = 0x20;
 
     BluetoothAdapter mBluetoothAdapter;
@@ -57,14 +57,14 @@ public class MainActivity extends AppCompatActivity {
     String mDeviceAddress = null;
 
     TextView mStateText;
-    Switch mButtonModeSwitch;
+    Switch mDpadModeSwitch;
     Button mConnectionButton;
     Menu mMenu;
 
-    int mPower = 80, mTurningPower = 60;
-    int mControlsMode = MODE_BUTTONS, mButtonControlsMode = BUTTONS_MODE_DPAD;
+    int mPower = 80, mPowerSecondary = 60;
+    int mControlsMode = MODE_DPAD_REGULAR, mDpadControlsMode = DPAD_MODE_REGULAR;
 
-    boolean mReverse = false, mReverseLR = false, mRegulateSpeed = false, mSynchronizeMotors = false, mGamepad = true;
+    boolean mReverse = false, mReverseLR = false, mReverse6B = false, mRegulateSpeed = false, mSynchronizeMotors = false, mGamepad = true;
 
     @Override
     public void onCreate (Bundle savedInstanceState) {
@@ -80,10 +80,10 @@ public class MainActivity extends AppCompatActivity {
             if (mDeviceAddress != null)
                 mSavedState = NXTTalker.STATE_CONNECTED;
 
-            if (savedInstanceState.containsKey("power")) mPower = savedInstanceState.getInt("power");
-            if (savedInstanceState.containsKey("power_turning")) mTurningPower = savedInstanceState.getInt("power_turning");
-            if (savedInstanceState.containsKey("controls_mode")) mControlsMode = savedInstanceState.getInt("controls_mode");
-            if (savedInstanceState.containsKey("button_controls_mode")) mButtonControlsMode = savedInstanceState.getInt("button_controls_mode");
+            if (savedInstanceState.containsKey("power"))                mPower = savedInstanceState.getInt("power");
+            if (savedInstanceState.containsKey("power_secondary"))      mPowerSecondary = savedInstanceState.getInt("power_secondary");
+            if (savedInstanceState.containsKey("controls_mode"))        mControlsMode = savedInstanceState.getInt("controls_mode");
+            if (savedInstanceState.containsKey("button_controls_mode")) mDpadControlsMode = savedInstanceState.getInt("button_controls_mode");
         }
 
         if (!NO_BT) {
@@ -97,7 +97,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         if (mNewLaunch)
-            mControlsMode = prefs.getInt("defconmode", MainActivity.MODE_BUTTONS);
+            mControlsMode = prefs.getInt("defconmode", MainActivity.MODE_DPAD_REGULAR);
 
         initializeUI();
         mNXTTalker = new NXTTalker(mHandler);
@@ -114,101 +114,161 @@ public class MainActivity extends AppCompatActivity {
         else
             actionBar.setBackgroundDrawable(new ColorDrawable(getResources().getColor(R.color.colorPrimaryDark)));
 
-        switch (mControlsMode) {
-            // -------------------------------------- Dpad Modes --------------------------------------- //
-            case MODE_BUTTONS:
-            case MODE_BUTTONS4WHEEL:
-                setContentView(R.layout.activity_main);
+        if (mControlsMode == MODE_DPAD_REGULAR) {
+            // ---------------------------------- Dpad (Regular) Mode ---------------------------------- //
+            setContentView(R.layout.activity_main);
 
-                LinearLayout controlsContainer = findViewById(R.id.controls_container);
-                int layoutResID = ((mButtonControlsMode == BUTTONS_MODE_DPAD) ? R.layout.controls_dpad : R.layout.controls_steering);
-                LinearLayout inflatedControls = (LinearLayout)View.inflate(this, layoutResID, null);
-                controlsContainer.addView(inflatedControls);
+            LinearLayout controlsContainer = findViewById(R.id.controls_container);
+            int layoutResID = ((mDpadControlsMode == DPAD_MODE_REGULAR) ? R.layout.dpad_controls_regular : R.layout.dpad_controls_steering);
+            LinearLayout inflatedControls = (LinearLayout)View.inflate(this, layoutResID, null);
+            controlsContainer.addView(inflatedControls);
 
-                ImageButton upButton = findViewById(R.id.button_up);
-                ImageButton downButton = findViewById(R.id.button_down);
-                ImageButton leftButton = findViewById(R.id.button_left);
-                ImageButton rightButton = findViewById(R.id.button_right);
+            findViewById(R.id.button_up).setOnTouchListener((v, event) -> DirectionButtonOnTouchListener(v, event, 1, 1));
+            findViewById(R.id.button_down).setOnTouchListener((v, event) -> DirectionButtonOnTouchListener(v, event, -1, -1));
+            findViewById(R.id.button_left).setOnTouchListener((v, event) -> DirectionButtonOnTouchListener(v, event, -0.6, 0.6));
+            findViewById(R.id.button_right).setOnTouchListener((v, event) -> DirectionButtonOnTouchListener(v, event, 0.6, -0.6));
 
-                upButton.setOnTouchListener((v, event) -> DirectionButtonOnTouchListener(v, event, 1, 1));
-                downButton.setOnTouchListener((v, event) -> DirectionButtonOnTouchListener(v, event, -1, -1));
-
-                if (mControlsMode == MODE_BUTTONS) {
-                    updateMenu(R.id.menuitem_buttons);
-
-                    leftButton.setOnTouchListener((v, event) -> DirectionButtonOnTouchListener(v, event, -0.6, 0.6));
-                    rightButton.setOnTouchListener((v, event) -> DirectionButtonOnTouchListener(v, event, 0.6, -0.6));
-                } else if (mControlsMode == MODE_BUTTONS4WHEEL) {
-                    updateMenu(R.id.menuitem_buttons_4wheel);
-
-                    leftButton.setOnTouchListener((v, event) -> DirectionButton4WheelOnTouchListener(v, event, 1));
-                    rightButton.setOnTouchListener((v, event) -> DirectionButton4WheelOnTouchListener(v, event, -1));
-
-                    findViewById(R.id.power_4wheel_layout).setVisibility(View.VISIBLE);
-
-                    SeekBar turningPowerSeekBar = findViewById(R.id.power_4wheel_seekbar);
-                    turningPowerSeekBar.setProgress(mTurningPower);
-                    turningPowerSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-                        @Override
-                        public void onProgressChanged (SeekBar seekBar, int progress, boolean fromUser) {
-                            mTurningPower = progress;
-                        }
-
-                        @Override
-                        public void onStartTrackingTouch (SeekBar seekBar) {
-                        }
-
-                        @Override
-                        public void onStopTrackingTouch (SeekBar seekBar) {
-                        }
-                    });
+            SeekBar powerSeekBar = findViewById(R.id.power_seekbar);
+            powerSeekBar.setProgress(mPower);
+            powerSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+                @Override
+                public void onProgressChanged (SeekBar seekBar, int progress, boolean fromUser) {
+                    mPower = progress;
                 }
 
-                SeekBar powerSeekBar = findViewById(R.id.power_seekbar);
-                powerSeekBar.setProgress(mPower);
-                powerSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-                    @Override
-                    public void onProgressChanged (SeekBar seekBar, int progress, boolean fromUser) {
-                        mPower = progress;
-                    }
+                @Override
+                public void onStartTrackingTouch (SeekBar seekBar) {
+                }
 
-                    @Override
-                    public void onStartTrackingTouch (SeekBar seekBar) {
-                    }
+                @Override
+                public void onStopTrackingTouch (SeekBar seekBar) {
+                }
+            });
+        } else if (mControlsMode == MODE_DPAD_RACECAR) {
+            // ---------------------------------- Dpad (Racecar) Mode ---------------------------------- //
+            setContentView(R.layout.activity_main);
 
-                    @Override
-                    public void onStopTrackingTouch (SeekBar seekBar) {
-                    }
-                });
-                break;
+            LinearLayout controlsContainer = findViewById(R.id.controls_container);
+            int layoutResID = ((mDpadControlsMode == DPAD_MODE_REGULAR) ? R.layout.dpad_controls_regular : R.layout.dpad_controls_steering);
+            LinearLayout inflatedControls = (LinearLayout)View.inflate(this, layoutResID, null);
+            controlsContainer.addView(inflatedControls);
+
+            findViewById(R.id.button_up).setOnTouchListener((v, event) -> DirectionButtonOnTouchListener(v, event, 1, 1));
+            findViewById(R.id.button_down).setOnTouchListener((v, event) -> DirectionButtonOnTouchListener(v, event, -1, -1));
+            findViewById(R.id.button_left).setOnTouchListener((v, event) -> DirectionButtonSecondaryOnTouchListener(v, event, 1));
+            findViewById(R.id.button_right).setOnTouchListener((v, event) -> DirectionButtonSecondaryOnTouchListener(v, event, -1));
+
+            findViewById(R.id.power_secondary_layout).setVisibility(View.VISIBLE);
+            ((TextView)findViewById(R.id.power_secondary_text)).setText(getString(R.string.power_turning));
+
+            SeekBar turningPowerSeekBar = findViewById(R.id.power_secondary_seekbar);
+            turningPowerSeekBar.setProgress(mPowerSecondary);
+            turningPowerSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+                @Override
+                public void onProgressChanged (SeekBar seekBar, int progress, boolean fromUser) {
+                    mPowerSecondary = progress;
+                }
+
+                @Override
+                public void onStartTrackingTouch (SeekBar seekBar) {
+                }
+
+                @Override
+                public void onStopTrackingTouch (SeekBar seekBar) {
+                }
+            });
+
+            SeekBar powerSeekBar = findViewById(R.id.power_seekbar);
+            powerSeekBar.setProgress(mPower);
+            powerSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+                @Override
+                public void onProgressChanged (SeekBar seekBar, int progress, boolean fromUser) {
+                    mPower = progress;
+                }
+
+                @Override
+                public void onStartTrackingTouch (SeekBar seekBar) {
+                }
+
+                @Override
+                public void onStopTrackingTouch (SeekBar seekBar) {
+                }
+            });
+        } else if (mControlsMode == MODE_DPAD_6BUTTON) {
+            // --------------------------------- Dpad (6 Buttons) Mode --------------------------------- //
+            setContentView(R.layout.activity_main);
+
+            LinearLayout controlsContainer = findViewById(R.id.controls_container);
+            LinearLayout inflatedControls = (LinearLayout)View.inflate(this, R.layout.dpad_controls_6button, null);
+            controlsContainer.addView(inflatedControls);
+
+            findViewById(R.id.button_up).setOnTouchListener((v, event) -> DirectionButtonOnTouchListener(v, event, 1, 1));
+            findViewById(R.id.button_down).setOnTouchListener((v, event) -> DirectionButtonOnTouchListener(v, event, -1, -1));
+            findViewById(R.id.button_left).setOnTouchListener((v, event) -> DirectionButtonOnTouchListener(v, event, -0.6, 0.6));
+            findViewById(R.id.button_right).setOnTouchListener((v, event) -> DirectionButtonOnTouchListener(v, event, 0.6, -0.6));
+            findViewById(R.id.button_pos).setOnTouchListener((v, event) -> DirectionButtonSecondaryOnTouchListener(v, event, 1));
+            findViewById(R.id.button_neg).setOnTouchListener((v, event) -> DirectionButtonSecondaryOnTouchListener(v, event, -1));
+
+            findViewById(R.id.steering_layout).setVisibility(View.GONE);
+            findViewById(R.id.power_secondary_layout).setVisibility(View.VISIBLE);
+            ((TextView)findViewById(R.id.power_secondary_text)).setText(getString(R.string.power_action));
+
+            SeekBar turningPowerSeekBar = findViewById(R.id.power_secondary_seekbar);
+            turningPowerSeekBar.setProgress(mPowerSecondary);
+            turningPowerSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+                @Override
+                public void onProgressChanged (SeekBar seekBar, int progress, boolean fromUser) {
+                    mPowerSecondary = progress;
+                }
+
+                @Override
+                public void onStartTrackingTouch (SeekBar seekBar) {
+                }
+
+                @Override
+                public void onStopTrackingTouch (SeekBar seekBar) {
+                }
+            });
+
+            SeekBar powerSeekBar = findViewById(R.id.power_seekbar);
+            powerSeekBar.setProgress(mPower);
+            powerSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+                @Override
+                public void onProgressChanged (SeekBar seekBar, int progress, boolean fromUser) {
+                    mPower = progress;
+                }
+
+                @Override
+                public void onStartTrackingTouch (SeekBar seekBar) {
+                }
+
+                @Override
+                public void onStopTrackingTouch (SeekBar seekBar) {
+                }
+            });
+        } else if (mControlsMode == MODE_TOUCHPAD) {
             // ------------------------------------- Touchpad Mode ------------------------------------- //
-            case MODE_TOUCHPAD:
-                setContentView(R.layout.activity_main_touchpad);
-                updateMenu(R.id.menuitem_touchpad);
-                TouchPadView mTouchPadView = findViewById(R.id.touchpad);
-                mTouchPadView.setOnTouchListener(this::TouchpadOnTouchListener);
-                break;
+            setContentView(R.layout.activity_main_touchpad);
+            TouchPadView mTouchPadView = findViewById(R.id.touchpad);
+            mTouchPadView.setOnTouchListener(this::TouchpadOnTouchListener);
+        } else if (mControlsMode == MODE_TANK) {
             // --------------------------------------- Tank Mode --------------------------------------- //
-            case MODE_TANK:
-                setContentView(R.layout.activity_main_tank);
-                updateMenu(R.id.menuitem_tank);
-                TankView mTankView = findViewById(R.id.tank);
-                mTankView.setOnTouchListener(this::TankOnTouchListener);
-                break;
+            setContentView(R.layout.activity_main_tank);
+            TankView mTankView = findViewById(R.id.tank);
+            mTankView.setOnTouchListener(this::TankOnTouchListener);
+        }
+        else if (mControlsMode == MODE_TANK_3MOTOR) {
             // ------------------------------------ Tank3Motor Mode ------------------------------------ //
-            case MODE_TANK3MOTOR:
-                setContentView(R.layout.activity_main_tank3motor);
-                updateMenu(R.id.menuitem_tank3motor);
-                Tank3MotorView mTank3MotorView = findViewById(R.id.tank3motor);
-                mTank3MotorView.setOnTouchListener(this::Tank3MotorOnTouchListener);
-                break;
+            setContentView(R.layout.activity_main_tank3motor);
+            Tank3MotorView mTank3MotorView = findViewById(R.id.tank3motor);
+            mTank3MotorView.setOnTouchListener(this::Tank3MotorOnTouchListener);
         }
 
         mStateText = findViewById(R.id.state_text);
 
-        mButtonModeSwitch = findViewById(R.id.steering_toggle);
-        if (mControlsMode == MODE_BUTTONS || mControlsMode == MODE_BUTTONS4WHEEL)
-            mButtonModeSwitch.setChecked(mButtonControlsMode == BUTTONS_MODE_STEERING);
+        mDpadModeSwitch = findViewById(R.id.steering_toggle);
+        if (mControlsMode == MODE_DPAD_REGULAR || mControlsMode == MODE_DPAD_RACECAR)
+            mDpadModeSwitch.setChecked(mDpadControlsMode == DPAD_MODE_STEERING);
 
         mConnectionButton = findViewById(R.id.connection_button);
         mConnectionButton.setOnClickListener(v -> {
@@ -223,22 +283,23 @@ public class MainActivity extends AppCompatActivity {
             displayState();
         });
 
+        updateMenu();
         displayState();
     }
 
-    public void changeSteeringDpad (View view) {
+    public void changeSteeringMode (View view) {
         if (mState == NXTTalker.STATE_CONNECTING) {
             Toast.makeText(this, getString(R.string.error_please_wait), Toast.LENGTH_SHORT).show();
             return;
         }
 
-        if (mButtonModeSwitch == null || !(mControlsMode == MODE_BUTTONS || mControlsMode == MODE_BUTTONS4WHEEL)) {
+        if (mDpadModeSwitch == null || !(mControlsMode == MODE_DPAD_REGULAR || mControlsMode == MODE_DPAD_RACECAR)) {
             Toast.makeText(this, getString(R.string.error_generic), Toast.LENGTH_LONG).show();
             return;
         }
 
-        mButtonModeSwitch.setChecked(!mButtonModeSwitch.isChecked());
-        mButtonControlsMode = mButtonModeSwitch.isChecked() ? BUTTONS_MODE_STEERING : BUTTONS_MODE_DPAD;
+        mDpadModeSwitch.setChecked(!mDpadModeSwitch.isChecked());
+        mDpadControlsMode = mDpadModeSwitch.isChecked() ? DPAD_MODE_STEERING : DPAD_MODE_REGULAR;
         initializeUI();
     }
 
@@ -272,19 +333,21 @@ public class MainActivity extends AppCompatActivity {
         mConnectionButton.setText(btnStr);
     }
 
-    private void updateMenu (int disabled) {
+    private void updateMenu () {
         if (mMenu != null) {
-            mMenu.findItem(R.id.menuitem_buttons).setEnabled(disabled != R.id.menuitem_buttons).setVisible(disabled != R.id.menuitem_buttons);
-            mMenu.findItem(R.id.menuitem_buttons_4wheel).setEnabled(disabled != R.id.menuitem_buttons_4wheel).setVisible(disabled != R.id.menuitem_buttons_4wheel);
-            mMenu.findItem(R.id.menuitem_touchpad).setEnabled(disabled != R.id.menuitem_touchpad).setVisible(disabled != R.id.menuitem_touchpad);
-            mMenu.findItem(R.id.menuitem_tank).setEnabled(disabled != R.id.menuitem_tank).setVisible(disabled != R.id.menuitem_tank);
-            mMenu.findItem(R.id.menuitem_tank3motor).setEnabled(disabled != R.id.menuitem_tank3motor).setVisible(disabled != R.id.menuitem_tank3motor);
+            mMenu.findItem(R.id.menu_item_dpad).setEnabled(mControlsMode != MODE_DPAD_REGULAR).setVisible(mControlsMode != MODE_DPAD_REGULAR);
+            mMenu.findItem(R.id.menu_item_dpad_racecar).setEnabled(mControlsMode != MODE_DPAD_RACECAR).setVisible(mControlsMode != MODE_DPAD_RACECAR);
+            mMenu.findItem(R.id.menu_item_dpad_6button).setEnabled(mControlsMode != MODE_DPAD_6BUTTON).setVisible(mControlsMode != MODE_DPAD_6BUTTON);
+            mMenu.findItem(R.id.menu_item_touchpad).setEnabled(mControlsMode != MODE_TOUCHPAD).setVisible(mControlsMode != MODE_TOUCHPAD);
+            mMenu.findItem(R.id.menu_item_tank).setEnabled(mControlsMode != MODE_TANK).setVisible(mControlsMode != MODE_TANK);
+            mMenu.findItem(R.id.menu_item_tank_3motor).setEnabled(mControlsMode != MODE_TANK_3MOTOR).setVisible(mControlsMode != MODE_TANK_3MOTOR);
         }
     }
 
     private void readSharedPreferences (SharedPreferences prefs) {
         mReverse = prefs.getBoolean("swapFWDREV", mReverse);
         mReverseLR = prefs.getBoolean("swapLeftRight", mReverseLR);
+        mReverse6B = prefs.getBoolean("reverse6B", mReverse6B);
         mRegulateSpeed = prefs.getBoolean("regulateSpeed", mRegulateSpeed);
         mSynchronizeMotors = prefs.getBoolean("syncMotors", mSynchronizeMotors);
         mGamepad = prefs.getBoolean("gamepad", mGamepad);
@@ -389,14 +452,14 @@ public class MainActivity extends AppCompatActivity {
                 dpadMovement(action, -1, -1, findViewById(R.id.button_down));
                 break;
             case INPUT_LEFT:
-                if (mControlsMode == MODE_BUTTONS4WHEEL)
-                    dpad4WheelMovement(action, 1, findViewById(R.id.button_left));
+                if (mControlsMode == MODE_DPAD_RACECAR)
+                    dpadSecondaryMovement(action, 1, findViewById(R.id.button_left));
                 else
                     dpadMovement(action, -0.6, 0.6, findViewById(R.id.button_left));
                 break;
             case INPUT_RIGHT:
-                if (mControlsMode == MODE_BUTTONS4WHEEL)
-                    dpad4WheelMovement(action, -1, findViewById(R.id.button_right));
+                if (mControlsMode == MODE_DPAD_RACECAR)
+                    dpadSecondaryMovement(action, -1, findViewById(R.id.button_right));
                 else
                     dpadMovement(action, 0.6, -0.6, findViewById(R.id.button_right));
                 break;
@@ -449,9 +512,9 @@ public class MainActivity extends AppCompatActivity {
         if (mState == NXTTalker.STATE_CONNECTED)
             outState.putString("device_address", mDeviceAddress);
         outState.putInt("power", mPower);
-        outState.putInt("power_turning", mTurningPower);
+        outState.putInt("power_secondary", mPowerSecondary);
         outState.putInt("controls_mode", mControlsMode);
-        outState.putInt("button_controls_mode", mButtonControlsMode);
+        outState.putInt("button_controls_mode", mDpadControlsMode);
     }
 
     @Override
@@ -462,39 +525,45 @@ public class MainActivity extends AppCompatActivity {
 
     //endregion
 
-    //region onOptions
+    //region Options Menu
 
     @Override
     public boolean onCreateOptionsMenu (Menu menu) {
-        getMenuInflater().inflate(R.menu.options_menu, menu);
+        getMenuInflater().inflate(R.menu.menu_main, menu);
         mMenu = menu;
+        updateMenu();
         return true;
     }
 
     @Override
-    public boolean onOptionsItemSelected (MenuItem item) {
+    public boolean onOptionsItemSelected (@NonNull MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.menuitem_buttons:
-                mControlsMode = MODE_BUTTONS;
+            case R.id.menu_item_dpad:
+                mControlsMode = MODE_DPAD_REGULAR;
                 initializeUI();
                 break;
-            case R.id.menuitem_buttons_4wheel:
-                mControlsMode = MODE_BUTTONS4WHEEL;
+            case R.id.menu_item_dpad_racecar:
+                mControlsMode = MODE_DPAD_RACECAR;
                 initializeUI();
                 break;
-            case R.id.menuitem_touchpad:
+            case R.id.menu_item_dpad_6button:
+                mControlsMode = MODE_DPAD_6BUTTON;
+                initializeUI();
+                break;
+            case R.id.menu_item_touchpad:
                 mControlsMode = MODE_TOUCHPAD;
                 initializeUI();
                 break;
-            case R.id.menuitem_tank:
+            case R.id.menu_item_tank:
                 mControlsMode = MODE_TANK;
                 initializeUI();
                 break;
-            case R.id.menuitem_tank3motor:
-                mControlsMode = MODE_TANK3MOTOR;
+            case R.id.menu_item_tank_3motor:
+                mControlsMode = MODE_TANK_3MOTOR;
                 initializeUI();
                 break;
-            case R.id.menuitem_settings:
+            case R.id.menu_ab_settings:
+            case R.id.menu_item_settings:
                 startActivity(new Intent(this, Settings.class));
                 break;
             default:
@@ -508,10 +577,10 @@ public class MainActivity extends AppCompatActivity {
     //region DpadMovement
 
     private void dpadMovement (int action, double leftModifier, double rightModifier, View view) {
-        boolean dcm = (mControlsMode == MODE_BUTTONS || mControlsMode == MODE_BUTTONS4WHEEL);
+        boolean dcm = (mControlsMode == MODE_DPAD_REGULAR || mControlsMode == MODE_DPAD_RACECAR || mControlsMode == MODE_DPAD_6BUTTON);
 
         if (action == MotionEvent.ACTION_DOWN) {
-            if (dcm) view.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.dpad_button_background_pressed)));
+            if (dcm) view.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.dpad_button_pressed)));
 
             byte power = (byte)mPower;
             if (mReverse)
@@ -519,7 +588,7 @@ public class MainActivity extends AppCompatActivity {
 
             byte l = (byte)(power * leftModifier);
             byte r = (byte)(power * rightModifier);
-
+            Log.d("MOTORTEST", "L: " + l + ";  R: " + r + ";");
             if (!mReverseLR)
                 mNXTTalker.Motors(l, r, mRegulateSpeed, mSynchronizeMotors);
             else
@@ -527,25 +596,25 @@ public class MainActivity extends AppCompatActivity {
 
         } else if ((action == MotionEvent.ACTION_UP) || (action == MotionEvent.ACTION_CANCEL)) {
             mNXTTalker.Motors((byte)0, (byte)0, mRegulateSpeed, mSynchronizeMotors);
-            if (dcm) view.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.dpad_button_background_idle)));
+            if (dcm) view.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.dpad_button_idle_primary)));
         }
     }
 
-    private void dpad4WheelMovement (int action, double turningModifier, View view) {
+    private void dpadSecondaryMovement (int action, double actionModifier, View view) {
         if (action == MotionEvent.ACTION_DOWN) {
-            view.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.dpad_button_background_pressed)));
+            view.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.dpad_button_pressed)));
 
-            byte power = (byte)mTurningPower;
-            if (mReverseLR)
+            byte power = (byte)mPowerSecondary;
+            if (((mControlsMode != MODE_DPAD_6BUTTON) && mReverseLR) || ((mControlsMode == MODE_DPAD_6BUTTON) && mReverse6B))
                 power *= -1;
 
-            byte a = (byte)(power * turningModifier);
-
+            byte a = (byte)(power * actionModifier);
+            Log.d("MOTORTEST", "A: " + a + ";");
             mNXTTalker.Motor(0, a, mRegulateSpeed, mSynchronizeMotors);
 
         } else if ((action == MotionEvent.ACTION_UP) || (action == MotionEvent.ACTION_CANCEL)) {
             mNXTTalker.Motor(0, (byte)0, mRegulateSpeed, mSynchronizeMotors);
-            view.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.dpad_button_background_idle)));
+            view.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor((mControlsMode == MODE_DPAD_6BUTTON) ? R.color.dpad_button_idle_secondary : R.color.dpad_button_idle_primary)));
         }
     }
 
@@ -558,8 +627,8 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
-    private boolean DirectionButton4WheelOnTouchListener (View v, MotionEvent event, double turningModifier) {
-        dpad4WheelMovement(event.getAction(), turningModifier, v);
+    private boolean DirectionButtonSecondaryOnTouchListener (View v, MotionEvent event, double actionModifier) {
+        dpadSecondaryMovement(event.getAction(), actionModifier, v);
         return true;
     }
 

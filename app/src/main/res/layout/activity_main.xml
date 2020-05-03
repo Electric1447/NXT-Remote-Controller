@@ -45,7 +45,7 @@
         </LinearLayout>
 
         <LinearLayout
-            android:id="@+id/power_4wheel_layout"
+            android:id="@+id/power_secondary_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginLeft="16dp"
@@ -54,14 +54,15 @@
             android:visibility="gone">
 
             <TextView
+                android:id="@+id/power_secondary_text"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
-                android:text="@string/power_4wheel"
+                android:text="@string/power_turning"
                 android:textSize="18sp" />
 
             <SeekBar
-                android:id="@+id/power_4wheel_seekbar"
+                android:id="@+id/power_secondary_seekbar"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
@@ -74,12 +75,13 @@
         </LinearLayout>
 
         <LinearLayout
+            android:id="@+id/steering_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginLeft="16dp"
             android:layout_marginTop="16dp"
             android:layout_marginRight="16dp"
-            android:onClick="changeSteeringDpad">
+            android:onClick="changeSteeringMode">
 
             <TextView
                 android:layout_width="wrap_content"

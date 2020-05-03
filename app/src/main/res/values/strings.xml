@@ -1,57 +1,64 @@
 <resources>
     <string name="app_name">NXT Remote Controller</string>
 
-    <string name="error_generic">An error has occurred.</string>
-    <string name="error_please_wait">Please wait.</string>
-    <string name="error_bt_na">Bluetooth not available.</string>
-    <string name="error_bt_not_enabled">Bluetooth not enabled, exiting.</string>
-    <string name="error_internet_connection">No Internet Connection, Please try again later.</string>
+    <string name="error_generic"             >An error has occurred.</string>
+    <string name="error_please_wait"         >Please wait.</string>
+    <string name="error_bt_na"               >Bluetooth not available.</string>
+    <string name="error_bt_not_enabled"      >Bluetooth not enabled, exiting.</string>
+    <string name="error_internet_connection" >No Internet Connection, Please try again later.</string>
 
-    <string name="menu_buttons">Button controls</string>
-    <string name="menu_buttons_4wheel">Button controls (4 Wheels)</string>
-    <string name="menu_touchpad">Touchpad controls</string>
-    <string name="menu_tank">Tank controls</string>
-    <string name="menu_3motor">3 Motor controls</string>
-    <string name="menu_settings">Settings</string>
+    <string name="menu_main_dpad"         >Dpad controls</string>
+    <string name="menu_main_dpad_racecar" >Dpad controls (Racecar)</string>
+    <string name="menu_main_dpad_6button" >Dpad controls (6 Buttons)</string>
+    <string name="menu_main_touchpad"     >Touchpad controls</string>
+    <string name="menu_main_tank"         >Tank controls</string>
+    <string name="menu_main_tank_3motor"  >Tank controls (3 Motors)</string>
+    <string name="menu_main_settings"     >Settings</string>
 
-    <string name="power_power">Power:</string>
-    <string name="power_4wheel">Turning Power:</string>
+    <string name="menu_settings_sourcecode" >Sourcecode</string>
+    <string name="menu_settings_changelog"  >Changelog</string>
+
+    <string name="power_power"   >Power:</string>
+    <string name="power_turning" >Turning Power:</string>
+    <string name="power_action"  >Action Power:</string>
 
     <string name="steering_switch">Use Steering Layout:</string>
 
-    <string name="conn_btn_connect">Connect</string>
-    <string name="conn_btn_disconnect">Disconnect</string>
-    <string name="conn_btn_connecting">Please Wait</string>
+    <string name="conn_btn_connect"    >Connect</string>
+    <string name="conn_btn_disconnect" >Disconnect</string>
+    <string name="conn_btn_connecting" >Please Wait</string>
 
-    <string name="conn_state_connected">Connected</string>
-    <string name="conn_state_not_connected">Not Connected</string>
-    <string name="conn_state_connecting">Connecting…</string>
+    <string name="conn_state_connected"     >Connected</string>
+    <string name="conn_state_not_connected" >Not Connected</string>
+    <string name="conn_state_connecting"    >Connecting…</string>
 
-    <string name="devices_paired">Paired devices:</string>
-    <string name="devices_new">Devices found:</string>
-    <string name="devices_no_devices">No devices</string>
+    <string name="devices_paired"     >Paired devices:</string>
+    <string name="devices_new"        >Devices found:</string>
+    <string name="devices_no_devices" >No devices</string>
 
-    <string name="scan_idle">Scan</string>
-    <string name="scan_scanning">Scanning…</string>
+    <string name="scan_idle"     >Scan</string>
+    <string name="scan_scanning" >Scanning…</string>
 
-    <string name="settings_header_basic">Basic</string>
-    <string name="settings_header_advanced">Advanced</string>
+    <string name="settings_header_basic"    >Basic</string>
+    <string name="settings_header_advanced" >Advanced</string>
 
-    <string name="settings_opt_swap_fr">Swap forward/reverse</string>
-    <string name="settings_opt_swap_lr">Swap left/right</string>
-    <string name="settings_opt_con_mode">Default Controls Mode</string>
-    <string name="settings_opt_regspeed">Regulate speed</string>
-    <string name="settings_opt_syncmotors">Synchronize motors</string>
-    <string name="settings_opt_gamepad">Support game controller</string>
+    <string name="settings_opt_swap_fr"    >Swap forward/reverse</string>
+    <string name="settings_opt_swap_lr"    >Swap left/right</string>
+    <string name="settings_opt_reverse_6b" >Reverse 6 button mode action</string>
+    <string name="settings_opt_con_mode"   >Default controls mode</string>
+    <string name="settings_opt_regspeed"   >Regulate speed</string>
+    <string name="settings_opt_syncmotors" >Synchronize motors</string>
+    <string name="settings_opt_gamepad"    >Support game controller</string>
 
     <string name="link_changelog">Changelog</string>
     <string name="link_source"><u>Source Code</u></string>
 
     <string-array name="conmode_array">
-        <item>Directional Pad</item>
-        <item>4 Wheels Dpad</item>
-        <item>Touchpad </item>
-        <item>Tank controls</item>
-        <item>Tank 3 Motors</item>
+        <item>Dpad (Regular)</item>
+        <item>Dpad (Racecar)</item>
+        <item>Dpad (6 Buttons)</item>
+        <item>Touchpad</item>
+        <item>Tank</item>
+        <item>Tank (3 Motors)</item>
     </string-array>
 </resources>

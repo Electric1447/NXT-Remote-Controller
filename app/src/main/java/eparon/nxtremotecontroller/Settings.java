@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Bundle;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
@@ -30,22 +31,17 @@ public class Settings extends AppCompatActivity implements AdapterView.OnItemSel
 
     public static String sourcecodeURL = "https://github.com/Electric1447/NXT-Remote-Controller";
 
-    int defConMode = MainActivity.MODE_BUTTONS;
+    Menu mMenu;
+
+    int defConMode = MainActivity.MODE_DPAD_REGULAR;
     Spinner conModeSpinner;
 
-    boolean swapFWDREV = false, swapLeftRight = false, regulateSpeed = false, syncMotors = false, gamepad = true;
-    CheckBox fwdrevCB, swapLeftRightCB, regSpeedCB, syncMotorsCB, gamepadCB;
+    boolean swapFWDREV = false, swapLeftRight = false, reverse6B = false, regulateSpeed = false, syncMotors = false, gamepad = true;
+    CheckBox fwdrevCB, swapLeftRightCB, reverse6bCB, regSpeedCB, syncMotorsCB, gamepadCB;
 
     @Override
     public void onBackPressed () {
         Save();
-    }
-
-    @Override
-    public boolean onOptionsItemSelected (@NonNull MenuItem item) {
-        if (item.getItemId() == android.R.id.home)
-            Save();
-        return true;
     }
 
     @Override
@@ -60,6 +56,7 @@ public class Settings extends AppCompatActivity implements AdapterView.OnItemSel
         if (savedInstanceState != null) {
             if (savedInstanceState.containsKey("set_swapFR")) swapFWDREV = savedInstanceState.getBoolean("set_swapFR");
             if (savedInstanceState.containsKey("set_swapLR")) swapLeftRight = savedInstanceState.getBoolean("set_swapLR");
+            if (savedInstanceState.containsKey("set_revr6B")) reverse6B = savedInstanceState.getBoolean("set_revr6B");
             if (savedInstanceState.containsKey("set_rSpeed")) regulateSpeed = savedInstanceState.getBoolean("set_rSpeed");
             if (savedInstanceState.containsKey("set_syncMo")) syncMotors = savedInstanceState.getBoolean("set_syncMo");
             if (savedInstanceState.containsKey("set_gamepd")) gamepad = savedInstanceState.getBoolean("set_gamepd");
@@ -72,12 +69,6 @@ public class Settings extends AppCompatActivity implements AdapterView.OnItemSel
     //region UI & onClick functions
 
     private void initializeViews () {
-        if (this.getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
-            LinearLayout sideLinearLayout = findViewById(R.id.side_ll);
-            sideLinearLayout.measure(0, 0);
-            findViewById(R.id.main_ll).setPadding(0, 0, (sideLinearLayout.getMeasuredWidth() + 200), 0);
-        }
-
         conModeSpinner = findViewById(R.id.conmode_spinner);
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this, R.array.conmode_array, R.layout.spinner_item);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -89,6 +80,8 @@ public class Settings extends AppCompatActivity implements AdapterView.OnItemSel
         fwdrevCB.setChecked(swapFWDREV);
         swapLeftRightCB = findViewById(R.id.cbLeftRight);
         swapLeftRightCB.setChecked(swapLeftRight);
+        reverse6bCB = findViewById(R.id.cbReverse6B);
+        reverse6bCB.setChecked(reverse6B);
         regSpeedCB = findViewById(R.id.cbRegSpeed);
         regSpeedCB.setChecked(regulateSpeed);
         syncMotorsCB = findViewById(R.id.cbSyncMotors);
@@ -97,6 +90,12 @@ public class Settings extends AppCompatActivity implements AdapterView.OnItemSel
         gamepadCB.setChecked(gamepad);
 
         ((TextView)findViewById(R.id.ver)).setText(String.format("%s v%s\nCreated by Itai Levin (Electric1447).\n\nbased on nxt-remote-control\nby Jacek Fedoryński (jfedor2)", getString(R.string.app_name), BuildConfig.VERSION_NAME)); // Set version TextView.
+
+        if (this.getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            LinearLayout sideLinearLayout = findViewById(R.id.side_ll);
+            sideLinearLayout.measure(0, 0);
+            findViewById(R.id.main_ll).setPadding(0, 0, (int)(sideLinearLayout.getMeasuredWidth() * 1.2f), 0);
+        }
     }
 
     public void cbPrefOnClick (View view) {
@@ -106,6 +105,9 @@ public class Settings extends AppCompatActivity implements AdapterView.OnItemSel
                 break;
             case R.id.rlLeftRight:
                 swapLeftRight = changeCheckBoxPref(swapLeftRightCB);
+                break;
+            case R.id.rlReverse6B:
+                reverse6B = changeCheckBoxPref(reverse6bCB);
                 break;
             case R.id.rlRegSpeed:
                 regulateSpeed = changeCheckBoxPref(regSpeedCB);
@@ -141,6 +143,7 @@ public class Settings extends AppCompatActivity implements AdapterView.OnItemSel
         SharedPreferences.Editor editor = prefs.edit();
         editor.putBoolean("swapFWDREV", swapFWDREV);
         editor.putBoolean("swapLeftRight", swapLeftRight);
+        editor.putBoolean("reverse6B", reverse6B);
         editor.putBoolean("regulateSpeed", regulateSpeed);
         editor.putBoolean("syncMotors", syncMotors);
         editor.putBoolean("gamepad", gamepad);
@@ -156,6 +159,7 @@ public class Settings extends AppCompatActivity implements AdapterView.OnItemSel
     private void readSharedPreferences () {
         swapFWDREV = prefs.getBoolean("swapFWDREV", swapFWDREV);
         swapLeftRight = prefs.getBoolean("swapLeftRight", swapLeftRight);
+        reverse6B = prefs.getBoolean("reverse6B", reverse6B);
         regulateSpeed = prefs.getBoolean("regulateSpeed", regulateSpeed);
         syncMotors = prefs.getBoolean("syncMotors", syncMotors);
         gamepad = prefs.getBoolean("gamepad", gamepad);
@@ -167,6 +171,7 @@ public class Settings extends AppCompatActivity implements AdapterView.OnItemSel
         super.onSaveInstanceState(outState);
         outState.putBoolean("set_swapFR", swapFWDREV);
         outState.putBoolean("set_swapLR", swapLeftRight);
+        outState.putBoolean("set_revr6B", reverse6B);
         outState.putBoolean("set_rSpeed", regulateSpeed);
         outState.putBoolean("set_syncMo", syncMotors);
         outState.putBoolean("set_gamepd", gamepad);
@@ -175,17 +180,36 @@ public class Settings extends AppCompatActivity implements AdapterView.OnItemSel
 
     //endregion
 
-    //region GOTO functions
+    //region Options Menu
 
-    public void gotoSource (View view) {
-        startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(sourcecodeURL)));
+    @Override
+    public boolean onCreateOptionsMenu (Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_settings, menu);
+        mMenu = menu;
+        return true;
     }
 
-    public void gotoChangelog (View view) {
-        if (NetworkUtils.isNetworkAvailable(getApplicationContext()))
-            startActivity(new Intent(Settings.this, Changelog.class));
-        else
-            Toast.makeText(this, R.string.error_internet_connection, Toast.LENGTH_SHORT).show();
+    @Override
+    public boolean onOptionsItemSelected (@NonNull MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                Save();
+                break;
+            case R.id.menu_ab_sourcecode:
+            case R.id.menu_item_sourcecode:
+                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(sourcecodeURL)));
+                break;
+            case R.id.menu_ab_changelog:
+            case R.id.menu_item_changelog:
+                if (NetworkUtils.isNetworkAvailable(getApplicationContext()))
+                    startActivity(new Intent(Settings.this, Changelog.class));
+                else
+                    Toast.makeText(this, R.string.error_internet_connection, Toast.LENGTH_SHORT).show();
+                break;
+            default:
+                return false;
+        }
+        return true;
     }
 
     //endregion

@@ -4,7 +4,23 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:gravity="center"
-    tools:ignore="NestedWeights">
+    tools:ignore="NestedWeights,RtlHardcoded">
+
+    <eparon.nxtremotecontroller.View.SquareImageButton
+        android:id="@+id/button_left"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical|right"
+        android:layout_marginLeft="16dp"
+        android:layout_marginTop="80dp"
+        android:layout_marginBottom="80dp"
+        android:layout_weight="1"
+        android:background="@drawable/rounded_corners"
+        android:backgroundTint="@color/dpad_button_idle_primary"
+        android:padding="10dp"
+        android:rotation="-90"
+        android:scaleType="fitCenter"
+        android:src="@drawable/d_arrow_48dp" />
 
     <LinearLayout
         android:layout_width="wrap_content"
@@ -17,10 +33,10 @@
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_gravity="center_horizontal|top"
-            android:layout_margin="6dp"
+            android:layout_margin="8dp"
             android:layout_weight="1"
             android:background="@drawable/rounded_corners"
-            android:backgroundTint="@color/dpad_button_background_idle"
+            android:backgroundTint="@color/dpad_button_idle_primary"
             android:padding="10dp"
             android:scaleType="fitCenter"
             android:src="@drawable/d_arrow_48dp" />
@@ -30,10 +46,10 @@
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_gravity="center_horizontal|bottom"
-            android:layout_margin="6dp"
+            android:layout_margin="8dp"
             android:layout_weight="1"
             android:background="@drawable/rounded_corners"
-            android:backgroundTint="@color/dpad_button_background_idle"
+            android:backgroundTint="@color/dpad_button_idle_primary"
             android:padding="10dp"
             android:rotation="180"
             android:scaleType="fitCenter"
@@ -42,34 +58,16 @@
     </LinearLayout>
 
     <eparon.nxtremotecontroller.View.SquareImageButton
-        android:id="@+id/button_left"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_vertical"
-        android:layout_marginLeft="8dp"
-        android:layout_marginTop="80dp"
-        android:layout_marginRight="8dp"
-        android:layout_marginBottom="80dp"
-        android:layout_weight="1"
-        android:background="@drawable/rounded_corners"
-        android:backgroundTint="@color/dpad_button_background_idle"
-        android:padding="10dp"
-        android:rotation="-90"
-        android:scaleType="fitCenter"
-        android:src="@drawable/d_arrow_48dp" />
-
-    <eparon.nxtremotecontroller.View.SquareImageButton
         android:id="@+id/button_right"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_vertical"
-        android:layout_marginLeft="8dp"
+        android:layout_gravity="center_vertical|left"
         android:layout_marginTop="80dp"
-        android:layout_marginRight="8dp"
+        android:layout_marginRight="16dp"
         android:layout_marginBottom="80dp"
         android:layout_weight="1"
         android:background="@drawable/rounded_corners"
-        android:backgroundTint="@color/dpad_button_background_idle"
+        android:backgroundTint="@color/dpad_button_idle_primary"
         android:padding="10dp"
         android:rotation="90"
         android:scaleType="fitCenter"
