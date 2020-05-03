@@ -5,6 +5,7 @@
     <string name="error_please_wait">Please wait.</string>
     <string name="error_bt_na">Bluetooth not available.</string>
     <string name="error_bt_not_enabled">Bluetooth not enabled, exiting.</string>
+    <string name="error_internet_connection">No Internet Connection, Please try again later.</string>
 
     <string name="menu_buttons">Button controls</string>
     <string name="menu_buttons_4wheel">Button controls (4 Wheels)</string>
@@ -43,7 +44,8 @@
     <string name="settings_opt_syncmotors">Synchronize motors</string>
     <string name="settings_opt_gamepad">Support game controller</string>
 
-    <string name="link_source"><u>Source Code (Github)</u></string>
+    <string name="link_changelog">Changelog</string>
+    <string name="link_source"><u>Source Code</u></string>
 
     <string-array name="conmode_array">
         <item>Directional Pad</item>

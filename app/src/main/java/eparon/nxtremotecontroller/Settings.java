@@ -3,6 +3,7 @@ package eparon.nxtremotecontroller;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.MenuItem;
@@ -10,20 +11,24 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
+import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import java.util.Objects;
 
+import eparon.nxtremotecontroller.Util.NetworkUtils;
+
 public class Settings extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
 
     public String PREFS_NXT = "NXTPrefsFile";
     SharedPreferences prefs;
 
-    public static String githubURL = "https://github.com/Electric1447/NXT-Remote-Controller";
+    public static String sourcecodeURL = "https://github.com/Electric1447/NXT-Remote-Controller";
 
     int defConMode = MainActivity.MODE_BUTTONS;
     Spinner conModeSpinner;
@@ -67,6 +72,12 @@ public class Settings extends AppCompatActivity implements AdapterView.OnItemSel
     //region UI & onClick functions
 
     private void initializeViews () {
+        if (this.getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            LinearLayout sideLinearLayout = findViewById(R.id.side_ll);
+            sideLinearLayout.measure(0, 0);
+            findViewById(R.id.main_ll).setPadding(0, 0, (sideLinearLayout.getMeasuredWidth() + 200), 0);
+        }
+
         conModeSpinner = findViewById(R.id.conmode_spinner);
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this, R.array.conmode_array, R.layout.spinner_item);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -85,7 +96,7 @@ public class Settings extends AppCompatActivity implements AdapterView.OnItemSel
         gamepadCB = findViewById(R.id.cbGamepad);
         gamepadCB.setChecked(gamepad);
 
-        ((TextView)findViewById(R.id.ver)).setText(String.format("%s v%s\nCreated by Itai Levin (Electric1447).\n\nbased on nxt-remote-control\nby Jacek Fedoryński (jfedor2)\n", getString(R.string.app_name), BuildConfig.VERSION_NAME)); // Set version TextView.
+        ((TextView)findViewById(R.id.ver)).setText(String.format("%s v%s\nCreated by Itai Levin (Electric1447).\n\nbased on nxt-remote-control\nby Jacek Fedoryński (jfedor2)", getString(R.string.app_name), BuildConfig.VERSION_NAME)); // Set version TextView.
     }
 
     public void cbPrefOnClick (View view) {
@@ -167,8 +178,14 @@ public class Settings extends AppCompatActivity implements AdapterView.OnItemSel
     //region GOTO functions
 
     public void gotoSource (View view) {
-        ((TextView)view).setTextColor(getResources().getColor(R.color.hyperlink_clicked));
-        startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(githubURL)));
+        startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(sourcecodeURL)));
+    }
+
+    public void gotoChangelog (View view) {
+        if (NetworkUtils.isNetworkAvailable(getApplicationContext()))
+            startActivity(new Intent(Settings.this, Changelog.class));
+        else
+            Toast.makeText(this, R.string.error_internet_connection, Toast.LENGTH_SHORT).show();
     }
 
     //endregion

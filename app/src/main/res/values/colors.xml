@@ -1,15 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#27005F</color>
-    <color name="colorPrimaryDark">#27005F</color>
-    <color name="colorAccent">#FF5C29</color>
+    <color name="colorPrimary"     >#27005F</color>
+    <color name="colorPrimaryDark" >#27005F</color>
+    <color name="colorAccent"      >#FF5C29</color>
 
-    <color name="dialogTextColorPrimary">#FFFFFF</color>
-    <color name="dialogBackground">#3F3F3F</color>
+    <color name="dialogTextColorPrimary" >#FFFFFF</color>
+    <color name="dialogBackground"       >#3F3F3F</color>
 
-    <color name="dpad_button_background_idle">#5A5A5A</color>
-    <color name="dpad_button_background_pressed">#A5A5A5</color>>
-
-    <color name="hyperlink">#000093</color>
-    <color name="hyperlink_clicked">#53188A</color>
+    <color name="dpad_button_background_idle"    >#5A5A5A</color>
+    <color name="dpad_button_background_pressed" >#A5A5A5</color>>
 </resources>

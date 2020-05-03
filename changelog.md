@@ -1,3 +1,8 @@
+## NXT Remote Controller v1.2.5
+- Added Changelog in settings.
+
+&nbsp;
+
 ## NXT Remote Controller v1.2.4
 - Added Default Controls Mode option.
 
