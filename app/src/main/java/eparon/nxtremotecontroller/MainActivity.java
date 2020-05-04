@@ -198,7 +198,8 @@ public class MainActivity extends AppCompatActivity {
             setContentView(R.layout.activity_main);
 
             LinearLayout controlsContainer = findViewById(R.id.controls_container);
-            LinearLayout inflatedControls = (LinearLayout)View.inflate(this, R.layout.dpad_controls_6button, null);
+            int layoutResID = ((mDpadControlsMode == DPAD_MODE_REGULAR) ? R.layout.dpad_controls_6button : R.layout.dpad_controls_6button_steering);
+            LinearLayout inflatedControls = (LinearLayout)View.inflate(this, layoutResID, null);
             controlsContainer.addView(inflatedControls);
 
             findViewById(R.id.button_up).setOnTouchListener((v, event) -> DirectionButtonOnTouchListener(v, event, 1, 1));
@@ -208,7 +209,6 @@ public class MainActivity extends AppCompatActivity {
             findViewById(R.id.button_pos).setOnTouchListener((v, event) -> DirectionButtonSecondaryOnTouchListener(v, event, 1));
             findViewById(R.id.button_neg).setOnTouchListener((v, event) -> DirectionButtonSecondaryOnTouchListener(v, event, -1));
 
-            findViewById(R.id.steering_layout).setVisibility(View.GONE);
             findViewById(R.id.power_secondary_layout).setVisibility(View.VISIBLE);
             ((TextView)findViewById(R.id.power_secondary_text)).setText(getString(R.string.power_action));
 
@@ -266,7 +266,7 @@ public class MainActivity extends AppCompatActivity {
         mStateText = findViewById(R.id.state_text);
 
         mDpadModeSwitch = findViewById(R.id.steering_toggle);
-        if (mControlsMode == MODE_DPAD_REGULAR || mControlsMode == MODE_DPAD_RACECAR)
+        if (mControlsMode == MODE_DPAD_REGULAR || mControlsMode == MODE_DPAD_RACECAR || mControlsMode == MODE_DPAD_6BUTTON)
             mDpadModeSwitch.setChecked(mDpadControlsMode == DPAD_MODE_STEERING);
 
         mConnectionButton = findViewById(R.id.connection_button);
@@ -292,7 +292,7 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        if (mDpadModeSwitch == null || !(mControlsMode == MODE_DPAD_REGULAR || mControlsMode == MODE_DPAD_RACECAR)) {
+        if (mDpadModeSwitch == null || !(mControlsMode == MODE_DPAD_REGULAR || mControlsMode == MODE_DPAD_RACECAR || mControlsMode == MODE_DPAD_6BUTTON)) {
             Toast.makeText(this, getString(R.string.error_generic), Toast.LENGTH_LONG).show();
             return;
         }

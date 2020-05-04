@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center">
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <eparon.nxtremotecontroller.View.SquareImageButton
+            android:id="@+id/button_up"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_gravity="center_horizontal|top"
+            android:layout_margin="8dp"
+            android:layout_weight="1"
+            android:background="@drawable/rounded_corners"
+            android:backgroundTint="@color/dpad_button_idle_primary"
+            android:padding="10dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/d_arrow_48dp" />
+
+        <eparon.nxtremotecontroller.View.SquareImageButton
+            android:id="@+id/button_down"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_gravity="center_horizontal|bottom"
+            android:layout_margin="8dp"
+            android:layout_weight="1"
+            android:background="@drawable/rounded_corners"
+            android:backgroundTint="@color/dpad_button_idle_primary"
+            android:padding="10dp"
+            android:rotation="180"
+            android:scaleType="fitCenter"
+            android:src="@drawable/d_arrow_48dp" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <eparon.nxtremotecontroller.View.SquareImageButton
+            android:id="@+id/button_neg"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_gravity="center_horizontal|top"
+            android:layout_margin="20dp"
+            android:layout_weight="1"
+            android:background="@drawable/rounded_corners"
+            android:backgroundTint="@color/dpad_button_idle_secondary"
+            android:padding="10dp"
+            android:rotation="180"
+            android:scaleType="fitCenter"
+            android:src="@drawable/d_spike_48dp" />
+
+        <eparon.nxtremotecontroller.View.SquareImageButton
+            android:id="@+id/button_left"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_gravity="center_horizontal|bottom"
+            android:layout_margin="8dp"
+            android:layout_weight="1"
+            android:background="@drawable/rounded_corners"
+            android:backgroundTint="@color/dpad_button_idle_primary"
+            android:padding="10dp"
+            android:rotation="-90"
+            android:scaleType="fitCenter"
+            android:src="@drawable/d_arrow_48dp" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <eparon.nxtremotecontroller.View.SquareImageButton
+            android:id="@+id/button_pos"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_gravity="center_horizontal|top"
+            android:layout_margin="20dp"
+            android:layout_weight="1"
+            android:background="@drawable/rounded_corners"
+            android:backgroundTint="@color/dpad_button_idle_secondary"
+            android:padding="10dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/d_spike_48dp" />
+
+        <eparon.nxtremotecontroller.View.SquareImageButton
+            android:id="@+id/button_right"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_gravity="center_horizontal|bottom"
+            android:layout_margin="8dp"
+            android:layout_weight="1"
+            android:background="@drawable/rounded_corners"
+            android:backgroundTint="@color/dpad_button_idle_primary"
+            android:padding="10dp"
+            android:rotation="90"
+            android:scaleType="fitCenter"
+            android:src="@drawable/d_arrow_48dp" />
+
+    </LinearLayout>
+
+</LinearLayout>

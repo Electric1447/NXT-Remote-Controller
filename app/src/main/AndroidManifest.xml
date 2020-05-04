@@ -21,7 +21,9 @@
             android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"
             android:keepScreenOn="true"
             android:label="@string/app_name"
-            android:launchMode="singleTask">
+            android:launchMode="singleTask"
+            android:resizeableActivity="false"
+            tools:targetApi="n">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />

@@ -8,8 +8,8 @@ android {
         applicationId "eparon.nxtremotecontroller"
         minSdkVersion 21
         targetSdkVersion 29
-        versionCode 131
-        versionName "1.3.1_01"
+        versionCode 132
+        versionName "1.3.2"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         resConfigs "en"
