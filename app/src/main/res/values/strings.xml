@@ -7,6 +7,8 @@
     <string name="error_bt_not_enabled"      >Bluetooth not enabled, exiting.</string>
     <string name="error_internet_connection" >No Internet Connection, Please try again later.</string>
 
+    <string name="alert_restart">App will restart to apply the change.</string>
+
     <string name="menu_main_dpad"         >Dpad controls</string>
     <string name="menu_main_dpad_racecar" >Dpad controls (Racecar)</string>
     <string name="menu_main_dpad_6button" >Dpad controls (6 Buttons)</string>
@@ -14,6 +16,9 @@
     <string name="menu_main_tank"         >Tank controls</string>
     <string name="menu_main_tank_3motor"  >Tank controls (3 Motors)</string>
     <string name="menu_main_settings"     >Settings</string>
+
+    <string name="menu_ev3_abcd">ABCD Controls</string>
+    <string name="menu_ev3_r3ptar">R3PTAR</string>
 
     <string name="menu_settings_sourcecode" >Sourcecode</string>
     <string name="menu_settings_changelog"  >Changelog</string>
@@ -50,6 +55,7 @@
     <string name="settings_opt_regspeed"   >Regulate speed</string>
     <string name="settings_opt_syncmotors" >Synchronize motors</string>
     <string name="settings_opt_gamepad"    >Support game controller</string>
+    <string name="settings_opt_ev3"        >EV3 Mode (EXPERIMENTAL)</string>
 
     <string-array name="conmode_array">
         <item>Dpad (Regular)</item>

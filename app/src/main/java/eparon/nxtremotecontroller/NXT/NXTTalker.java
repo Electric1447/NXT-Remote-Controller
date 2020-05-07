@@ -14,16 +14,16 @@ public class NXTTalker {
 
     private static final String commUUID = "00001101-0000-1000-8000-00805F9B34FB";
 
-    public static final int STATE_NONE = 0;
-    public static final int STATE_CONNECTING = 1;
-    public static final int STATE_CONNECTED = 2;
-
     private int mState;
     private Handler mHandler;
     private BluetoothAdapter mAdapter;
 
     private ConnectThread mConnectThread;
     private ConnectedThread mConnectedThread;
+
+    public static final int STATE_NONE = 0;
+    public static final int STATE_CONNECTING = 1;
+    public static final int STATE_CONNECTED = 2;
 
     public NXTTalker (Handler handler) {
         mAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -94,14 +94,10 @@ public class NXTTalker {
 
     //region Motor Commands
 
-    public void Motor (int motor, byte power, boolean speedReg, boolean motorSync) {
+    public void Motor (byte port, byte power, boolean speedReg, boolean motorSync) {
         byte[] data = {0x0c, 0x00, (byte)0x80, 0x04, 0x00, 0x32, 0x07, 0x00, 0x00, 0x20, 0x00, 0x00, 0x00, 0x00};
 
-        if (motor == 1)
-            data[4] = 0x01;
-        if (motor == 2)
-            data[4] = 0x02;
-
+        data[4] = port;
         data[5] = power;
 
         if (speedReg)
@@ -113,12 +109,15 @@ public class NXTTalker {
         Write(data);
     }
 
-    public void Motors (byte l, byte r, boolean speedReg, boolean motorSync) {
+    public void Motors (byte port_l, byte port_r, byte power_l, byte power_r, boolean speedReg, boolean motorSync) {
         byte[] data = {0x0c, 0x00, (byte)0x80, 0x04, 0x02, 0x32, 0x07, 0x00, 0x00, 0x20, 0x00, 0x00, 0x00, 0x00,
                 0x0c, 0x00, (byte)0x80, 0x04, 0x01, 0x32, 0x07, 0x00, 0x00, 0x20, 0x00, 0x00, 0x00, 0x00};
 
-        data[5] = l;
-        data[19] = r;
+        data[4] = port_l;
+        data[5] = power_l;
+
+        data[18] = port_r;
+        data[19] = power_r;
 
         if (speedReg) {
             data[7] |= 0x01;
@@ -133,14 +132,19 @@ public class NXTTalker {
         Write(data);
     }
 
-    public void Motors3 (byte l, byte r, byte action, boolean speedReg, boolean motorSync) {
+    public void Motors (byte port_l, byte port_r, byte port_a, byte power_l, byte power_r, byte power_a, boolean speedReg, boolean motorSync) {
         byte[] data = {0x0c, 0x00, (byte)0x80, 0x04, 0x02, 0x32, 0x07, 0x00, 0x00, 0x20, 0x00, 0x00, 0x00, 0x00,
                 0x0c, 0x00, (byte)0x80, 0x04, 0x01, 0x32, 0x07, 0x00, 0x00, 0x20, 0x00, 0x00, 0x00, 0x00,
                 0x0c, 0x00, (byte)0x80, 0x04, 0x00, 0x32, 0x07, 0x00, 0x00, 0x20, 0x00, 0x00, 0x00, 0x00};
 
-        data[5] = l;
-        data[19] = r;
-        data[33] = action;
+        data[4] = port_l;
+        data[5] = power_l;
+
+        data[18] = port_r;
+        data[19] = power_r;
+
+        data[32] = port_a;
+        data[33] = power_a;
 
         if (speedReg) {
             data[7] |= 0x01;
@@ -155,9 +159,21 @@ public class NXTTalker {
         Write(data);
     }
 
+    public void StopMotor (byte port, boolean speedReg, boolean motorSync) {
+        this.Motor(port, (byte)0, speedReg, motorSync);
+    }
+
+    public void StopMotors (byte port_l, byte port_r, boolean speedReg, boolean motorSync) {
+        this.Motors(port_l, port_r, (byte)0, (byte)0, speedReg, motorSync);
+    }
+
+    public void StopMotors (byte port_l, byte port_r, byte port_a, boolean speedReg, boolean motorSync) {
+        this.Motors(port_l, port_r, port_a, (byte)0, (byte)0, (byte)0, speedReg, motorSync);
+    }
+
     //endregion
 
-    private void Write (byte[] out) {
+    void Write (byte[] out) {
         ConnectedThread r;
         synchronized (this) {
             if (mState != STATE_CONNECTED)

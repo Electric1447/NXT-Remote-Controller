@@ -14,6 +14,7 @@ import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -32,13 +33,14 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import java.util.Objects;
 
+import eparon.nxtremotecontroller.NXT.Motor;
 import eparon.nxtremotecontroller.NXT.NXTTalker;
 import eparon.nxtremotecontroller.View.Tank3MotorView;
 import eparon.nxtremotecontroller.View.TankView;
 import eparon.nxtremotecontroller.View.TouchPadView;
 
 @SuppressLint("ClickableViewAccessibility")
-public class MainActivity extends AppCompatActivity {
+public class NXTControlActivity extends AppCompatActivity {
 
     public String PREFS_NXT = "NXTPrefsFile";
     SharedPreferences prefs;
@@ -46,10 +48,11 @@ public class MainActivity extends AppCompatActivity {
     static final int REQUEST_ENABLE_BT = 1, REQUEST_CONNECT_DEVICE = 2, REQUEST_SETTINGS = 3;
     static final int MODE_DPAD_REGULAR = 1, MODE_DPAD_RACECAR = 2, MODE_DPAD_6BUTTON = 3, MODE_TOUCHPAD = 4, MODE_TANK = 5, MODE_TANK_3MOTOR = 6;
     static final int DPAD_MODE_REGULAR = 1, DPAD_MODE_STEERING = 2;
-    static final byte INPUT_FORWARD = 0x18, INPUT_REVERSE = 0x19, INPUT_LEFT = 0x1f, INPUT_RIGHT = 0x20;
+    static final float JOYSTICK_DEADZONE = 0.2f, TRIGGER_DEADZONE = 0.1f;
 
     BluetoothAdapter mBluetoothAdapter;
     NXTTalker mNXTTalker;
+    InputDevice mInputDevice;
 
     int mState = NXTTalker.STATE_NONE, mSavedState = NXTTalker.STATE_NONE;
     private boolean NO_BT = false, mNewLaunch = true;
@@ -79,9 +82,9 @@ public class MainActivity extends AppCompatActivity {
             if (mDeviceAddress != null)
                 mSavedState = NXTTalker.STATE_CONNECTED;
 
-            if (savedInstanceState.containsKey("power"))                mPower = savedInstanceState.getInt("power");
-            if (savedInstanceState.containsKey("power_secondary"))      mPowerSecondary = savedInstanceState.getInt("power_secondary");
-            if (savedInstanceState.containsKey("controls_mode"))        mControlsMode = savedInstanceState.getInt("controls_mode");
+            if (savedInstanceState.containsKey("power")) mPower = savedInstanceState.getInt("power");
+            if (savedInstanceState.containsKey("power_secondary")) mPowerSecondary = savedInstanceState.getInt("power_secondary");
+            if (savedInstanceState.containsKey("controls_mode")) mControlsMode = savedInstanceState.getInt("controls_mode");
             if (savedInstanceState.containsKey("button_controls_mode")) mDpadControlsMode = savedInstanceState.getInt("button_controls_mode");
         }
 
@@ -96,7 +99,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         if (mNewLaunch)
-            mControlsMode = prefs.getInt("defconmode", MainActivity.MODE_DPAD_REGULAR);
+            mControlsMode = prefs.getInt("defconmode", NXTControlActivity.MODE_DPAD_REGULAR);
 
         initializeUI();
         mNXTTalker = new NXTTalker(mHandler);
@@ -255,8 +258,7 @@ public class MainActivity extends AppCompatActivity {
             setContentView(R.layout.activity_main_tank);
             TankView mTankView = findViewById(R.id.tank);
             mTankView.setOnTouchListener(this::TankOnTouchListener);
-        }
-        else if (mControlsMode == MODE_TANK_3MOTOR) {
+        } else if (mControlsMode == MODE_TANK_3MOTOR) {
             // ------------------------------------ Tank3Motor Mode ------------------------------------ //
             setContentView(R.layout.activity_main_tank3motor);
             Tank3MotorView mTank3MotorView = findViewById(R.id.tank3motor);
@@ -408,63 +410,177 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean dispatchKeyEvent (KeyEvent event) {
+        // Back button code
+        if (event.getKeyCode() == KeyEvent.KEYCODE_BACK) {
+            this.finishAffinity();
+            this.finishAndRemoveTask();
+        }
+
         if (!mGamepad)
             return false;
 
+        int action = event.getAction();
         boolean handled = false;
 
         if ((event.getRepeatCount() <= 10) || (event.getRepeatCount() % 10 == 0))
             switch (event.getKeyCode()) {
                 case KeyEvent.KEYCODE_BUTTON_A:
-                case KeyEvent.KEYCODE_BUTTON_R2:
-                case KeyEvent.KEYCODE_DPAD_UP:
-                    inputHandler(INPUT_FORWARD, event.getAction());
+                    dpadMovement(action, 1, 1, findViewById(R.id.button_up));
                     handled = true;
                     break;
                 case KeyEvent.KEYCODE_BUTTON_B:
-                case KeyEvent.KEYCODE_BUTTON_L2:
-                case KeyEvent.KEYCODE_DPAD_DOWN:
-                    inputHandler(INPUT_REVERSE, event.getAction());
+                    dpadMovement(action, -1, -1, findViewById(R.id.button_down));
                     handled = true;
                     break;
                 case KeyEvent.KEYCODE_BUTTON_L1:
-                case KeyEvent.KEYCODE_DPAD_LEFT:
-                    inputHandler(INPUT_LEFT, event.getAction());
+                    if (mControlsMode == MODE_DPAD_RACECAR)
+                        dpadSecondaryMovement(action, 1, findViewById(R.id.button_left));
+                    else
+                        dpadMovement(action, -0.6, 0.6, findViewById(R.id.button_left));
                     handled = true;
                     break;
                 case KeyEvent.KEYCODE_BUTTON_R1:
-                case KeyEvent.KEYCODE_DPAD_RIGHT:
-                    inputHandler(INPUT_RIGHT, event.getAction());
+                    if (mControlsMode == MODE_DPAD_RACECAR)
+                        dpadSecondaryMovement(action, -1, findViewById(R.id.button_right));
+                    else
+                        dpadMovement(action, 0.6, -0.6, findViewById(R.id.button_right));
                     handled = true;
+                    break;
+                case KeyEvent.KEYCODE_BUTTON_Y:
+                    if (mControlsMode == MODE_DPAD_6BUTTON) {
+                        dpadSecondaryMovement(action, 1, findViewById(R.id.button_pos));
+                        handled = true;
+                    }
+                    break;
+                case KeyEvent.KEYCODE_BUTTON_X:
+                    if (mControlsMode == MODE_DPAD_6BUTTON) {
+                        dpadSecondaryMovement(action, -1, findViewById(R.id.button_neg));
+                        handled = true;
+                    }
                     break;
             }
 
         return handled;
     }
 
-    private void inputHandler (byte input, int action) {
-        switch (input) {
-            case INPUT_FORWARD:
-                dpadMovement(action, 1, 1, findViewById(R.id.button_up));
-                break;
-            case INPUT_REVERSE:
-                dpadMovement(action, -1, -1, findViewById(R.id.button_down));
-                break;
-            case INPUT_LEFT:
-                if (mControlsMode == MODE_DPAD_RACECAR)
-                    dpadSecondaryMovement(action, 1, findViewById(R.id.button_left));
-                else
-                    dpadMovement(action, -0.6, 0.6, findViewById(R.id.button_left));
-                break;
-            case INPUT_RIGHT:
-                if (mControlsMode == MODE_DPAD_RACECAR)
-                    dpadSecondaryMovement(action, -1, findViewById(R.id.button_right));
-                else
-                    dpadMovement(action, 0.6, -0.6, findViewById(R.id.button_right));
-                break;
-            default:
-                break;
+    @Override
+    public boolean dispatchGenericMotionEvent (MotionEvent event) {
+        mInputDevice = event.getDevice();
+        int action = event.getAction();
+
+        if ((event.getSource() & InputDevice.SOURCE_JOYSTICK) == InputDevice.SOURCE_JOYSTICK && action == MotionEvent.ACTION_MOVE) {
+            processJoystickInput(event);
+            //processDpadInput(event);
+            return true;
         }
+
+        return super.dispatchGenericMotionEvent(event);
+    }
+
+    private void processJoystickInput (MotionEvent event) {
+        InputDevice inputDevice = event.getDevice();
+
+        float joy_y = getCenteredAxis(event, inputDevice, MotionEvent.AXIS_Y) * -1f;
+        float joy_x = getCenteredAxis(event, inputDevice, MotionEvent.AXIS_X) * -1f;
+        float hat_y = getCenteredAxis(event, inputDevice, MotionEvent.AXIS_HAT_Y) * -1f;
+        float hat_x = getCenteredAxis(event, inputDevice, MotionEvent.AXIS_HAT_X) * -1f;
+
+        float triggers = getCenteredAxis(event, inputDevice, MotionEvent.AXIS_RTRIGGER) - getCenteredAxis(event, inputDevice, MotionEvent.AXIS_LTRIGGER);
+
+        if (mControlsMode == MODE_DPAD_REGULAR || mControlsMode == MODE_DPAD_RACECAR || mControlsMode == MODE_DPAD_6BUTTON) {
+            findViewById(R.id.button_up).setBackgroundTintList(ColorStateList.valueOf((((joy_y >= JOYSTICK_DEADZONE) || (hat_y == 1.0f) || (triggers >= TRIGGER_DEADZONE)) ? getResources().getColor(R.color.dpad_button_pressed) : getResources().getColor(R.color.dpad_button_idle_primary))));
+            findViewById(R.id.button_down).setBackgroundTintList(ColorStateList.valueOf((((joy_y <= -JOYSTICK_DEADZONE) || (hat_y == -1.0f) || (triggers <= -TRIGGER_DEADZONE)) ? getResources().getColor(R.color.dpad_button_pressed) : getResources().getColor(R.color.dpad_button_idle_primary))));
+            findViewById(R.id.button_left).setBackgroundTintList(ColorStateList.valueOf((((joy_x >= JOYSTICK_DEADZONE) || (hat_x == 1.0f)) ? getResources().getColor(R.color.dpad_button_pressed) : getResources().getColor(R.color.dpad_button_idle_primary))));
+            findViewById(R.id.button_right).setBackgroundTintList(ColorStateList.valueOf((((joy_x <= -JOYSTICK_DEADZONE) || (hat_x == -1.0f)) ? getResources().getColor(R.color.dpad_button_pressed) : getResources().getColor(R.color.dpad_button_idle_primary))));
+        }
+
+        // ------------------------ JOYSTICK (JOY) ------------------------ //
+        if (Math.abs(joy_y) >= JOYSTICK_DEADZONE) {
+            float power = joy_y * 100f;
+            if (mReverse)
+                power *= -1;
+
+            mNXTTalker.Motors(Motor.NXT_C, Motor.NXT_B, (byte)power, (byte)power, mRegulateSpeed, mSynchronizeMotors);
+        }
+
+        if (Math.abs(joy_x) >= JOYSTICK_DEADZONE) {
+            if (mControlsMode != MODE_DPAD_RACECAR) {
+                float power = joy_x * -60f;
+                if (mReverseLR)
+                    power *= -1;
+
+                mNXTTalker.Motors(Motor.NXT_C, Motor.NXT_B, (byte)(-1 * power), (byte)(power), mRegulateSpeed, mSynchronizeMotors);
+            } else {
+                float power = joy_x * 60f;
+                if (mReverseLR)
+                    power *= -1;
+
+                mNXTTalker.Motor(Motor.NXT_A, (byte)power, mRegulateSpeed, mSynchronizeMotors);
+            }
+        }
+        // ---------------------------------------------------------------- //
+
+        // -------------------------- DPAD (HAT) -------------------------- //
+        if (Math.abs(hat_y) == 1.0f) {
+            float power = hat_y * mPower;
+            if (mReverse)
+                power *= -1;
+
+            mNXTTalker.Motors(Motor.NXT_C, Motor.NXT_B, (byte)power, (byte)power, mRegulateSpeed, mSynchronizeMotors);
+        }
+
+        if (Math.abs(hat_x) == 1.0f) {
+            if (mControlsMode != MODE_DPAD_RACECAR) {
+                float power = hat_x * -0.6f * mPower;
+                if (mReverseLR)
+                    power *= -1;
+
+                mNXTTalker.Motors(Motor.NXT_C, Motor.NXT_B, (byte)(-1 * power), (byte)(power), mRegulateSpeed, mSynchronizeMotors);
+            } else {
+                float power = hat_x * mPowerSecondary;
+                if (mReverseLR)
+                    power *= -1;
+
+                mNXTTalker.Motor(Motor.NXT_A, (byte)power, mRegulateSpeed, mSynchronizeMotors);
+            }
+        }
+        // ---------------------------------------------------------------- //
+
+        // --------------------------- TRIGGERS --------------------------- //
+        if (Math.abs(triggers) >= TRIGGER_DEADZONE) {
+            float power = triggers * 100f;
+            if (mReverse)
+                power *= -1;
+
+            mNXTTalker.Motors(Motor.NXT_C, Motor.NXT_B, (byte)power, (byte)power, mRegulateSpeed, mSynchronizeMotors);
+        }
+        // ---------------------------------------------------------------- //
+
+        if ((Math.abs(joy_y) < JOYSTICK_DEADZONE) && (hat_y == 0f) && (Math.abs(triggers) < TRIGGER_DEADZONE)) {
+            mNXTTalker.StopMotors(Motor.NXT_B, Motor.NXT_C, mRegulateSpeed, mSynchronizeMotors);
+        }
+
+        if ((Math.abs(joy_x) < JOYSTICK_DEADZONE) && (hat_x == 0f)) {
+            if (mControlsMode != MODE_DPAD_RACECAR)
+                mNXTTalker.StopMotors(Motor.NXT_B, Motor.NXT_C, mRegulateSpeed, mSynchronizeMotors);
+            else
+                mNXTTalker.StopMotor(Motor.NXT_A, mRegulateSpeed, mSynchronizeMotors);
+        }
+
+    }
+
+    private static float getCenteredAxis (MotionEvent event, InputDevice device, int axis) {
+        final InputDevice.MotionRange range = device.getMotionRange(axis, event.getSource());
+        if (range != null) {
+            final float flat = range.getFlat();
+            final float value = event.getAxisValue(axis);
+
+            // Ignore axis values that are within the 'flat' region of the joystick axis center.
+            // A joystick at rest does not always report an absolute position of (0,0).
+            if (Math.abs(value) > flat)
+                return value;
+        }
+        return 0;
     }
 
     //endregion
@@ -589,12 +705,12 @@ public class MainActivity extends AppCompatActivity {
             byte r = (byte)(power * rightModifier);
 
             if (!mReverseLR)
-                mNXTTalker.Motors(l, r, mRegulateSpeed, mSynchronizeMotors);
+                mNXTTalker.Motors(Motor.NXT_C, Motor.NXT_B, l, r, mRegulateSpeed, mSynchronizeMotors);
             else
-                mNXTTalker.Motors(r, l, mRegulateSpeed, mSynchronizeMotors);
+                mNXTTalker.Motors(Motor.NXT_B, Motor.NXT_C, l, r, mRegulateSpeed, mSynchronizeMotors);
 
         } else if ((action == MotionEvent.ACTION_UP) || (action == MotionEvent.ACTION_CANCEL)) {
-            mNXTTalker.Motors((byte)0, (byte)0, mRegulateSpeed, mSynchronizeMotors);
+            mNXTTalker.StopMotors(Motor.NXT_B, Motor.NXT_C, mRegulateSpeed, mSynchronizeMotors);
             if (dcm) view.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.dpad_button_idle_primary)));
         }
     }
@@ -609,10 +725,10 @@ public class MainActivity extends AppCompatActivity {
 
             byte a = (byte)(power * actionModifier);
 
-            mNXTTalker.Motor(0, a, mRegulateSpeed, mSynchronizeMotors);
+            mNXTTalker.Motor(Motor.NXT_A, a, mRegulateSpeed, mSynchronizeMotors);
 
         } else if ((action == MotionEvent.ACTION_UP) || (action == MotionEvent.ACTION_CANCEL)) {
-            mNXTTalker.Motor(0, (byte)0, mRegulateSpeed, mSynchronizeMotors);
+            mNXTTalker.StopMotor(Motor.NXT_A, mRegulateSpeed, mSynchronizeMotors);
             view.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor((mControlsMode == MODE_DPAD_6BUTTON) ? R.color.dpad_button_idle_secondary : R.color.dpad_button_idle_primary)));
         }
     }
@@ -688,12 +804,12 @@ public class MainActivity extends AppCompatActivity {
             }
 
             if (!mReverseLR)
-                mNXTTalker.Motors((byte)(100 * l), (byte)(100 * r), mRegulateSpeed, mSynchronizeMotors);
+                mNXTTalker.Motors(Motor.NXT_C, Motor.NXT_B, (byte)(100 * l), (byte)(100 * r), mRegulateSpeed, mSynchronizeMotors);
             else
-                mNXTTalker.Motors((byte)(100 * r), (byte)(100 * l), mRegulateSpeed, mSynchronizeMotors);
+                mNXTTalker.Motors(Motor.NXT_B, Motor.NXT_C, (byte)(100 * l), (byte)(100 * r), mRegulateSpeed, mSynchronizeMotors);
 
         } else if ((action == MotionEvent.ACTION_UP) || (action == MotionEvent.ACTION_CANCEL)) {
-            mNXTTalker.Motors((byte)0, (byte)0, mRegulateSpeed, mSynchronizeMotors);
+            mNXTTalker.StopMotors(Motor.NXT_B, Motor.NXT_C, mRegulateSpeed, mSynchronizeMotors);
         }
 
         return true;
@@ -739,14 +855,14 @@ public class MainActivity extends AppCompatActivity {
             }
 
             if (!mReverseLR)
-                mNXTTalker.Motors(l, r, mRegulateSpeed, mSynchronizeMotors);
+                mNXTTalker.Motors(Motor.NXT_C, Motor.NXT_B, l, r, mRegulateSpeed, mSynchronizeMotors);
             else
-                mNXTTalker.Motors(r, l, mRegulateSpeed, mSynchronizeMotors);
+                mNXTTalker.Motors(Motor.NXT_B, Motor.NXT_C, l, r, mRegulateSpeed, mSynchronizeMotors);
 
             tv.drawTouchAction(positionsIndex);
 
         } else if ((action == MotionEvent.ACTION_UP) || (action == MotionEvent.ACTION_CANCEL)) {
-            mNXTTalker.Motors((byte)0, (byte)0, mRegulateSpeed, mSynchronizeMotors);
+            mNXTTalker.StopMotors(Motor.NXT_B, Motor.NXT_C, mRegulateSpeed, mSynchronizeMotors);
             tv.resetTouchActions();
         }
 
@@ -797,14 +913,14 @@ public class MainActivity extends AppCompatActivity {
             }
 
             if (!mReverseLR)
-                mNXTTalker.Motors3(l, r, a, mRegulateSpeed, mSynchronizeMotors);
+                mNXTTalker.Motors(Motor.NXT_C, Motor.NXT_B, Motor.NXT_A, l, r, a, mRegulateSpeed, mSynchronizeMotors);
             else
-                mNXTTalker.Motors3(r, l, a, mRegulateSpeed, mSynchronizeMotors);
+                mNXTTalker.Motors(Motor.NXT_B, Motor.NXT_C, Motor.NXT_A, l, r, a, mRegulateSpeed, mSynchronizeMotors);
 
             t3v.drawTouchAction(positionsIndex);
 
         } else if ((action == MotionEvent.ACTION_UP) || (action == MotionEvent.ACTION_CANCEL)) {
-            mNXTTalker.Motors3((byte)0, (byte)0, (byte)0, mRegulateSpeed, mSynchronizeMotors);
+            mNXTTalker.StopMotors(Motor.NXT_A, Motor.NXT_B, Motor.NXT_C, mRegulateSpeed, mSynchronizeMotors);
             t3v.resetTouchActions();
         }
 

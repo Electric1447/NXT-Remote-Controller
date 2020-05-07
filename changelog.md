@@ -1,3 +1,11 @@
+## NXT Remote Controller v2.0.0-beta1
+- Added support for EV3 (Experimental)
+- Gamepad input handler now handles Joystick and Triggers as Analog input.
+- Added 2 new modes for EV3: *ABCD* & *R3PTAR*.
+- In Dpad 6 button mode, **Y**&**X** on the gamepad now work as action positive and action negative.
+
+&nbsp;
+
 ## NXT Remote Controller v1.3.2
 - Added Steering mode to Dpad 6 button.
 

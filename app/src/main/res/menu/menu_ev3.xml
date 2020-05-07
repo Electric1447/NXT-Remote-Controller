@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:ignore="AlwaysShowAction">
+
+    <item
+        android:id="@+id/menu_ab_settings"
+        android:icon="@drawable/ic_menu_settings_white_30dp"
+        android:title="@string/menu_main_settings"
+        app:showAsAction="always" />
+
+    <item
+        android:id="@+id/menu_ab_main"
+        android:icon="@drawable/ic_more_vert_white_30dp"
+        android:orderInCategory="101"
+        android:title=""
+        app:showAsAction="always">
+        <menu>
+
+            <item
+                android:id="@+id/menu_item_tank_4motor"
+                android:icon="@drawable/ic_menu_tank_4motor_white_30dp"
+                android:title="@string/menu_ev3_abcd"
+                app:showAsAction="never" />
+
+            <item
+                android:id="@+id/menu_item_r3ptar"
+                android:icon="@drawable/ic_menu_r3ptar_white_30dp"
+                android:title="@string/menu_ev3_r3ptar"
+                app:showAsAction="never" />
+
+            <item
+                android:id="@+id/menu_item_settings"
+                android:icon="@drawable/ic_menu_settings_white_30dp"
+                android:title="@string/menu_main_settings"
+                app:showAsAction="never" />
+
+        </menu>
+    </item>
+
+</menu>

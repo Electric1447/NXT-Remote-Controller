@@ -34,11 +34,13 @@ public class Settings extends AppCompatActivity implements AdapterView.OnItemSel
 
     Menu mMenu;
 
-    int defConMode = MainActivity.MODE_DPAD_REGULAR;
+    int defConMode = NXTControlActivity.MODE_DPAD_REGULAR;
     Spinner conModeSpinner;
 
-    boolean swapFWDREV = false, swapLeftRight = false, reverse6B = false, regulateSpeed = false, syncMotors = false, gamepad = true;
-    CheckBox fwdrevCB, swapLeftRightCB, reverse6bCB, regSpeedCB, syncMotorsCB, gamepadCB;
+    boolean swapFWDREV = false, swapLeftRight = false, reverse6B = false, regulateSpeed = false, syncMotors = false, gamepad = true, ev3 = false;
+    CheckBox fwdrevCB, swapLeftRightCB, reverse6bCB, regSpeedCB, syncMotorsCB, gamepadCB, ev3CB;
+
+    boolean mRestart = false;
 
     @Override
     public void onBackPressed () {
@@ -61,7 +63,10 @@ public class Settings extends AppCompatActivity implements AdapterView.OnItemSel
             if (savedInstanceState.containsKey("set_rSpeed")) regulateSpeed = savedInstanceState.getBoolean("set_rSpeed");
             if (savedInstanceState.containsKey("set_syncMo")) syncMotors = savedInstanceState.getBoolean("set_syncMo");
             if (savedInstanceState.containsKey("set_gamepd")) gamepad = savedInstanceState.getBoolean("set_gamepd");
+            if (savedInstanceState.containsKey("set____ev3")) ev3 = savedInstanceState.getBoolean("set____ev3");
             if (savedInstanceState.containsKey("set_conmod")) defConMode = savedInstanceState.getInt("set_conmod");
+
+            if (savedInstanceState.containsKey("restart")) mRestart = savedInstanceState.getBoolean("restart");
         }
 
         initializeViews();
@@ -89,6 +94,8 @@ public class Settings extends AppCompatActivity implements AdapterView.OnItemSel
         syncMotorsCB.setChecked(syncMotors);
         gamepadCB = findViewById(R.id.cbGamepad);
         gamepadCB.setChecked(gamepad);
+        ev3CB = findViewById(R.id.cbEV3);
+        ev3CB.setChecked(ev3);
 
         ((TextView)findViewById(R.id.ver)).setText(String.format("%s v%s\nCreated by Itai Levin (Electric1447).\n\nbased on nxt-remote-control\nby Jacek Fedoryński (jfedor2)", getString(R.string.app_name), BuildConfig.VERSION_NAME)); // Set version TextView.
 
@@ -119,6 +126,11 @@ public class Settings extends AppCompatActivity implements AdapterView.OnItemSel
             case R.id.rlGamepad:
                 gamepad = changeCheckBoxPref(gamepadCB);
                 break;
+            case R.id.rlEV3:
+                ev3 = changeCheckBoxPref(ev3CB);
+                mRestart = true;
+                Toast.makeText(this, R.string.alert_restart, Toast.LENGTH_LONG).show();
+                break;
         }
     }
 
@@ -148,9 +160,19 @@ public class Settings extends AppCompatActivity implements AdapterView.OnItemSel
         editor.putBoolean("regulateSpeed", regulateSpeed);
         editor.putBoolean("syncMotors", syncMotors);
         editor.putBoolean("gamepad", gamepad);
+        editor.putBoolean("mode", ev3);
         editor.putInt("defconmode", defConMode);
         editor.apply();
-        startActivity(new Intent(Settings.this, MainActivity.class));
+        if (!mRestart) {
+            startActivity(new Intent(Settings.this, ev3 ? EV3ControlActivity.class : NXTControlActivity.class));
+        } else {
+            Intent i = getBaseContext().getPackageManager().getLaunchIntentForPackage(getBaseContext().getPackageName());
+            assert i != null;
+            i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(i);
+            finish();
+        }
     }
 
     public void goBack (View view) {
@@ -164,6 +186,7 @@ public class Settings extends AppCompatActivity implements AdapterView.OnItemSel
         regulateSpeed = prefs.getBoolean("regulateSpeed", regulateSpeed);
         syncMotors = prefs.getBoolean("syncMotors", syncMotors);
         gamepad = prefs.getBoolean("gamepad", gamepad);
+        ev3 = prefs.getBoolean("mode", ev3);
         defConMode = prefs.getInt("defconmode", defConMode);
     }
 
@@ -176,7 +199,10 @@ public class Settings extends AppCompatActivity implements AdapterView.OnItemSel
         outState.putBoolean("set_rSpeed", regulateSpeed);
         outState.putBoolean("set_syncMo", syncMotors);
         outState.putBoolean("set_gamepd", gamepad);
+        outState.putBoolean("set____ev3", ev3);
         outState.putInt("set_conmod", defConMode);
+
+        outState.putBoolean("restart", mRestart);
     }
 
     //endregion
