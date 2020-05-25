@@ -57,6 +57,10 @@
     <string name="settings_opt_gamepad"    >Support game controller</string>
     <string name="settings_opt_ev3"        >EV3 Mode (EXPERIMENTAL)</string>
 
+    <string name="about_creator"    >Created by Itai Levin (Electric1447).</string>
+    <string name="about_based_on"   >based on nxt-remote-control</string>
+    <string name="about_og_creator" >by Jacek Fedoryński (jfedor2)</string>
+
     <string-array name="conmode_array">
         <item>Dpad (Regular)</item>
         <item>Dpad (Racecar)</item>

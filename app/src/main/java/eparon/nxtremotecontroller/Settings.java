@@ -24,13 +24,12 @@ import java.util.Objects;
 
 import eparon.nxtremotecontroller.Util.NetworkUtils;
 
-public class Settings extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
+public class Settings extends AppCompatActivity {
 
-    public String PREFS_NXT = "NXTPrefsFile";
     SharedPreferences prefs;
 
-    public static String sourcecodeURL = "https://github.com/Electric1447/NXT-Remote-Controller";
-    public static String releasesURL = "https://github.com/Electric1447/NXT-Remote-Controller/releases";
+    public static final String sourcecodeURL = "https://github.com/Electric1447/NXT-Remote-Controller";
+    public static final String releasesURL = sourcecodeURL + "/releases";
 
     Menu mMenu;
 
@@ -53,7 +52,7 @@ public class Settings extends AppCompatActivity implements AdapterView.OnItemSel
         setContentView(R.layout.activity_settings);
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
 
-        prefs = getSharedPreferences(PREFS_NXT, Context.MODE_PRIVATE);
+        prefs = getSharedPreferences(NXTControlActivity.PREFS_NXT, Context.MODE_PRIVATE);
         readSharedPreferences();
 
         if (savedInstanceState != null) {
@@ -79,7 +78,16 @@ public class Settings extends AppCompatActivity implements AdapterView.OnItemSel
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this, R.array.conmode_array, R.layout.spinner_item);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         conModeSpinner.setAdapter(adapter);
-        conModeSpinner.setOnItemSelectedListener(this);
+        conModeSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected (AdapterView<?> parent, View view, int position, long id) {
+                defConMode = position + 1;
+            }
+
+            @Override
+            public void onNothingSelected (AdapterView<?> parent) {
+            }
+        });
         conModeSpinner.setSelection(defConMode - 1);
 
         fwdrevCB = findViewById(R.id.cbFWDREV);
@@ -97,7 +105,8 @@ public class Settings extends AppCompatActivity implements AdapterView.OnItemSel
         ev3CB = findViewById(R.id.cbEV3);
         ev3CB.setChecked(ev3);
 
-        ((TextView)findViewById(R.id.ver)).setText(String.format("%s v%s\nCreated by Itai Levin (Electric1447).\n\nbased on nxt-remote-control\nby Jacek Fedoryński (jfedor2)", getString(R.string.app_name), BuildConfig.VERSION_NAME)); // Set version TextView.
+        // Set version TextView.
+        ((TextView)findViewById(R.id.ver)).setText(String.format("%s v%s\n%s\n\n%s\n%s", getString(R.string.app_name), BuildConfig.VERSION_NAME, getString(R.string.about_creator), getString(R.string.about_based_on), getString(R.string.about_og_creator)));
 
         if (this.getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
             LinearLayout sideLinearLayout = findViewById(R.id.side_ll);
@@ -139,15 +148,6 @@ public class Settings extends AppCompatActivity implements AdapterView.OnItemSel
         return cb.isChecked();
     }
 
-    @Override
-    public void onItemSelected (AdapterView<?> parent, View view, int position, long id) {
-        defConMode = position + 1;
-    }
-
-    @Override
-    public void onNothingSelected (AdapterView<?> parent) {
-    }
-
     //endregion
 
     //region Save/Load
@@ -163,6 +163,7 @@ public class Settings extends AppCompatActivity implements AdapterView.OnItemSel
         editor.putBoolean("mode", ev3);
         editor.putInt("defconmode", defConMode);
         editor.apply();
+
         if (!mRestart) {
             startActivity(new Intent(Settings.this, ev3 ? EV3ControlActivity.class : NXTControlActivity.class));
         } else {

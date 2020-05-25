@@ -35,24 +35,33 @@ import java.util.Objects;
 
 import eparon.nxtremotecontroller.NXT.Motor;
 import eparon.nxtremotecontroller.NXT.NXTTalker;
+import eparon.nxtremotecontroller.Util.GamepadUtils;
+import eparon.nxtremotecontroller.Util.StateUtils;
 import eparon.nxtremotecontroller.View.Tank3MotorView;
 import eparon.nxtremotecontroller.View.TankView;
 import eparon.nxtremotecontroller.View.TouchPadView;
 
+import static eparon.nxtremotecontroller.Util.GamepadUtils.JOYSTICK_DEADZONE;
+import static eparon.nxtremotecontroller.Util.GamepadUtils.TRIGGER_DEADZONE;
+
 @SuppressLint("ClickableViewAccessibility")
 public class NXTControlActivity extends AppCompatActivity {
 
-    public String PREFS_NXT = "NXTPrefsFile";
+    public static String PREFS_NXT = "NXTPrefsFile";
     SharedPreferences prefs;
 
-    static final int REQUEST_ENABLE_BT = 1, REQUEST_CONNECT_DEVICE = 2, REQUEST_SETTINGS = 3;
+    static final int REQUEST_ENABLE_BT = 1, REQUEST_CONNECT_DEVICE = 2;
     static final int MODE_DPAD_REGULAR = 1, MODE_DPAD_RACECAR = 2, MODE_DPAD_6BUTTON = 3, MODE_TOUCHPAD = 4, MODE_TANK = 5, MODE_TANK_3MOTOR = 6;
     static final int DPAD_MODE_REGULAR = 1, DPAD_MODE_STEERING = 2;
-    static final float JOYSTICK_DEADZONE = 0.2f, TRIGGER_DEADZONE = 0.1f;
+
+    static boolean isDpadModes (int controlsMode) {
+        return controlsMode == MODE_DPAD_REGULAR || controlsMode == MODE_DPAD_RACECAR || controlsMode == MODE_DPAD_6BUTTON;
+    }
 
     BluetoothAdapter mBluetoothAdapter;
     NXTTalker mNXTTalker;
     InputDevice mInputDevice;
+    StateUtils stateUtils;
 
     int mState = NXTTalker.STATE_NONE, mSavedState = NXTTalker.STATE_NONE;
     private boolean NO_BT = false, mNewLaunch = true;
@@ -93,7 +102,7 @@ public class NXTControlActivity extends AppCompatActivity {
 
             if (mBluetoothAdapter == null) {
                 Toast.makeText(this, getString(R.string.error_bt_na), Toast.LENGTH_LONG).show();
-                finish();
+                closeApp();
                 return;
             }
         }
@@ -101,18 +110,18 @@ public class NXTControlActivity extends AppCompatActivity {
         if (mNewLaunch)
             mControlsMode = prefs.getInt("defconmode", NXTControlActivity.MODE_DPAD_REGULAR);
 
-        initializeUI();
         mNXTTalker = new NXTTalker(mHandler);
+        stateUtils = new StateUtils(getApplicationContext());
+        initializeUI();
     }
 
     //region Activity functions & methods
 
     private void initializeUI () {
-        int orientation = this.getResources().getConfiguration().orientation;
         ActionBar actionBar = getSupportActionBar();
         assert actionBar != null;
-        if (orientation == Configuration.ORIENTATION_LANDSCAPE)
-            actionBar.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        if (this.getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE)
+            actionBar.setBackgroundDrawable(new ColorDrawable(isDpadModes(mControlsMode) ? Color.TRANSPARENT : Color.BLACK));
         else
             actionBar.setBackgroundDrawable(new ColorDrawable(getResources().getColor(R.color.colorPrimaryDark)));
 
@@ -132,20 +141,7 @@ public class NXTControlActivity extends AppCompatActivity {
 
             SeekBar powerSeekBar = findViewById(R.id.power_seekbar);
             powerSeekBar.setProgress(mPower);
-            powerSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-                @Override
-                public void onProgressChanged (SeekBar seekBar, int progress, boolean fromUser) {
-                    mPower = progress;
-                }
-
-                @Override
-                public void onStartTrackingTouch (SeekBar seekBar) {
-                }
-
-                @Override
-                public void onStopTrackingTouch (SeekBar seekBar) {
-                }
-            });
+            powerSeekBar.setOnSeekBarChangeListener(new PowerSliderChangeListener(true));
         } else if (mControlsMode == MODE_DPAD_RACECAR) {
             // ---------------------------------- Dpad (Racecar) Mode ---------------------------------- //
             setContentView(R.layout.activity_main);
@@ -160,42 +156,16 @@ public class NXTControlActivity extends AppCompatActivity {
             findViewById(R.id.button_left).setOnTouchListener((v, event) -> DirectionButtonSecondaryOnTouchListener(v, event, 1));
             findViewById(R.id.button_right).setOnTouchListener((v, event) -> DirectionButtonSecondaryOnTouchListener(v, event, -1));
 
+            SeekBar powerSeekBar = findViewById(R.id.power_seekbar);
+            powerSeekBar.setProgress(mPower);
+            powerSeekBar.setOnSeekBarChangeListener(new PowerSliderChangeListener(true));
+
             findViewById(R.id.power_secondary_layout).setVisibility(View.VISIBLE);
             ((TextView)findViewById(R.id.power_secondary_text)).setText(getString(R.string.power_turning));
 
             SeekBar turningPowerSeekBar = findViewById(R.id.power_secondary_seekbar);
             turningPowerSeekBar.setProgress(mPowerSecondary);
-            turningPowerSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-                @Override
-                public void onProgressChanged (SeekBar seekBar, int progress, boolean fromUser) {
-                    mPowerSecondary = progress;
-                }
-
-                @Override
-                public void onStartTrackingTouch (SeekBar seekBar) {
-                }
-
-                @Override
-                public void onStopTrackingTouch (SeekBar seekBar) {
-                }
-            });
-
-            SeekBar powerSeekBar = findViewById(R.id.power_seekbar);
-            powerSeekBar.setProgress(mPower);
-            powerSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-                @Override
-                public void onProgressChanged (SeekBar seekBar, int progress, boolean fromUser) {
-                    mPower = progress;
-                }
-
-                @Override
-                public void onStartTrackingTouch (SeekBar seekBar) {
-                }
-
-                @Override
-                public void onStopTrackingTouch (SeekBar seekBar) {
-                }
-            });
+            turningPowerSeekBar.setOnSeekBarChangeListener(new PowerSliderChangeListener(false));
         } else if (mControlsMode == MODE_DPAD_6BUTTON) {
             // --------------------------------- Dpad (6 Buttons) Mode --------------------------------- //
             setContentView(R.layout.activity_main);
@@ -212,42 +182,16 @@ public class NXTControlActivity extends AppCompatActivity {
             findViewById(R.id.button_pos).setOnTouchListener((v, event) -> DirectionButtonSecondaryOnTouchListener(v, event, 1));
             findViewById(R.id.button_neg).setOnTouchListener((v, event) -> DirectionButtonSecondaryOnTouchListener(v, event, -1));
 
+            SeekBar powerSeekBar = findViewById(R.id.power_seekbar);
+            powerSeekBar.setProgress(mPower);
+            powerSeekBar.setOnSeekBarChangeListener(new PowerSliderChangeListener(true));
+
             findViewById(R.id.power_secondary_layout).setVisibility(View.VISIBLE);
             ((TextView)findViewById(R.id.power_secondary_text)).setText(getString(R.string.power_action));
 
             SeekBar turningPowerSeekBar = findViewById(R.id.power_secondary_seekbar);
             turningPowerSeekBar.setProgress(mPowerSecondary);
-            turningPowerSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-                @Override
-                public void onProgressChanged (SeekBar seekBar, int progress, boolean fromUser) {
-                    mPowerSecondary = progress;
-                }
-
-                @Override
-                public void onStartTrackingTouch (SeekBar seekBar) {
-                }
-
-                @Override
-                public void onStopTrackingTouch (SeekBar seekBar) {
-                }
-            });
-
-            SeekBar powerSeekBar = findViewById(R.id.power_seekbar);
-            powerSeekBar.setProgress(mPower);
-            powerSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-                @Override
-                public void onProgressChanged (SeekBar seekBar, int progress, boolean fromUser) {
-                    mPower = progress;
-                }
-
-                @Override
-                public void onStartTrackingTouch (SeekBar seekBar) {
-                }
-
-                @Override
-                public void onStopTrackingTouch (SeekBar seekBar) {
-                }
-            });
+            turningPowerSeekBar.setOnSeekBarChangeListener(new PowerSliderChangeListener(false));
         } else if (mControlsMode == MODE_TOUCHPAD) {
             // ------------------------------------- Touchpad Mode ------------------------------------- //
             setContentView(R.layout.activity_main_touchpad);
@@ -268,7 +212,7 @@ public class NXTControlActivity extends AppCompatActivity {
         mStateText = findViewById(R.id.state_text);
 
         mDpadModeSwitch = findViewById(R.id.steering_toggle);
-        if (mControlsMode == MODE_DPAD_REGULAR || mControlsMode == MODE_DPAD_RACECAR || mControlsMode == MODE_DPAD_6BUTTON)
+        if (isDpadModes(mControlsMode))
             mDpadModeSwitch.setChecked(mDpadControlsMode == DPAD_MODE_STEERING);
 
         mConnectionButton = findViewById(R.id.connection_button);
@@ -294,7 +238,7 @@ public class NXTControlActivity extends AppCompatActivity {
             return;
         }
 
-        if (mDpadModeSwitch == null || !(mControlsMode == MODE_DPAD_REGULAR || mControlsMode == MODE_DPAD_RACECAR || mControlsMode == MODE_DPAD_6BUTTON)) {
+        if (mDpadModeSwitch == null || !isDpadModes(mControlsMode)) {
             Toast.makeText(this, getString(R.string.error_generic), Toast.LENGTH_LONG).show();
             return;
         }
@@ -305,33 +249,10 @@ public class NXTControlActivity extends AppCompatActivity {
     }
 
     private void displayState () {
-        String stateStr = "", btnStr = "";
-        int textColor = 0xFFFFFFFF;
-
-        switch (mState) {
-            case NXTTalker.STATE_NONE:
-                stateStr = getString(R.string.conn_state_not_connected);
-                textColor = Color.RED;
-                btnStr = getString(R.string.conn_btn_connect);
-                mConnectionButton.setEnabled(true);
-                break;
-            case NXTTalker.STATE_CONNECTING:
-                stateStr = getString(R.string.conn_state_connecting);
-                textColor = Color.YELLOW;
-                btnStr = getString(R.string.conn_state_connecting);
-                mConnectionButton.setEnabled(false);
-                break;
-            case NXTTalker.STATE_CONNECTED:
-                stateStr = getString(R.string.conn_state_connected);
-                textColor = Color.GREEN;
-                btnStr = getString(R.string.conn_btn_disconnect);
-                mConnectionButton.setEnabled(true);
-                break;
-        }
-
-        mStateText.setText(stateStr);
-        mStateText.setTextColor(textColor);
-        mConnectionButton.setText(btnStr);
+        mStateText.setText(stateUtils.getStateText(mState));
+        mStateText.setTextColor(stateUtils.getStateTextColor(mState));
+        mConnectionButton.setEnabled(stateUtils.ConnectionButtonState(mState));
+        mConnectionButton.setText(stateUtils.getConnectionButtonText(mState));
     }
 
     private void updateMenu () {
@@ -373,7 +294,7 @@ public class NXTControlActivity extends AppCompatActivity {
                     findBrick();
                 } else {
                     Toast.makeText(this, getString(R.string.error_bt_not_enabled), Toast.LENGTH_LONG).show();
-                    finish();
+                    closeApp();
                 }
                 break;
             case REQUEST_CONNECT_DEVICE:
@@ -383,8 +304,6 @@ public class NXTControlActivity extends AppCompatActivity {
                     mDeviceAddress = address;
                     mNXTTalker.Connect(device);
                 }
-                break;
-            case REQUEST_SETTINGS:
                 break;
         }
     }
@@ -411,10 +330,8 @@ public class NXTControlActivity extends AppCompatActivity {
     @Override
     public boolean dispatchKeyEvent (KeyEvent event) {
         // Back button code
-        if (event.getKeyCode() == KeyEvent.KEYCODE_BACK) {
-            this.finishAffinity();
-            this.finishAndRemoveTask();
-        }
+        if (event.getKeyCode() == KeyEvent.KEYCODE_BACK)
+            closeApp();
 
         if (!mGamepad)
             return false;
@@ -425,14 +342,17 @@ public class NXTControlActivity extends AppCompatActivity {
         if ((event.getRepeatCount() <= 10) || (event.getRepeatCount() % 10 == 0))
             switch (event.getKeyCode()) {
                 case KeyEvent.KEYCODE_BUTTON_A:
+                case KeyEvent.KEYCODE_DPAD_UP:
                     dpadMovement(action, 1, 1, findViewById(R.id.button_up));
                     handled = true;
                     break;
                 case KeyEvent.KEYCODE_BUTTON_B:
+                case KeyEvent.KEYCODE_DPAD_DOWN:
                     dpadMovement(action, -1, -1, findViewById(R.id.button_down));
                     handled = true;
                     break;
                 case KeyEvent.KEYCODE_BUTTON_L1:
+                case KeyEvent.KEYCODE_DPAD_LEFT:
                     if (mControlsMode == MODE_DPAD_RACECAR)
                         dpadSecondaryMovement(action, 1, findViewById(R.id.button_left));
                     else
@@ -440,6 +360,7 @@ public class NXTControlActivity extends AppCompatActivity {
                     handled = true;
                     break;
                 case KeyEvent.KEYCODE_BUTTON_R1:
+                case KeyEvent.KEYCODE_DPAD_RIGHT:
                     if (mControlsMode == MODE_DPAD_RACECAR)
                         dpadSecondaryMovement(action, -1, findViewById(R.id.button_right));
                     else
@@ -470,7 +391,6 @@ public class NXTControlActivity extends AppCompatActivity {
 
         if ((event.getSource() & InputDevice.SOURCE_JOYSTICK) == InputDevice.SOURCE_JOYSTICK && action == MotionEvent.ACTION_MOVE) {
             processJoystickInput(event);
-            //processDpadInput(event);
             return true;
         }
 
@@ -480,14 +400,14 @@ public class NXTControlActivity extends AppCompatActivity {
     private void processJoystickInput (MotionEvent event) {
         InputDevice inputDevice = event.getDevice();
 
-        float joy_y = getCenteredAxis(event, inputDevice, MotionEvent.AXIS_Y) * -1f;
-        float joy_x = getCenteredAxis(event, inputDevice, MotionEvent.AXIS_X) * -1f;
-        float hat_y = getCenteredAxis(event, inputDevice, MotionEvent.AXIS_HAT_Y) * -1f;
-        float hat_x = getCenteredAxis(event, inputDevice, MotionEvent.AXIS_HAT_X) * -1f;
+        float joy_y = GamepadUtils.getCenteredAxis(event, inputDevice, MotionEvent.AXIS_Y) * -1f;
+        float joy_x = GamepadUtils.getCenteredAxis(event, inputDevice, MotionEvent.AXIS_X) * -1f;
+        float hat_y = GamepadUtils.getCenteredAxis(event, inputDevice, MotionEvent.AXIS_HAT_Y) * -1f;
+        float hat_x = GamepadUtils.getCenteredAxis(event, inputDevice, MotionEvent.AXIS_HAT_X) * -1f;
 
-        float triggers = getCenteredAxis(event, inputDevice, MotionEvent.AXIS_RTRIGGER) - getCenteredAxis(event, inputDevice, MotionEvent.AXIS_LTRIGGER);
+        float triggers = GamepadUtils.getCenteredAxis(event, inputDevice, MotionEvent.AXIS_RTRIGGER) - GamepadUtils.getCenteredAxis(event, inputDevice, MotionEvent.AXIS_LTRIGGER);
 
-        if (mControlsMode == MODE_DPAD_REGULAR || mControlsMode == MODE_DPAD_RACECAR || mControlsMode == MODE_DPAD_6BUTTON) {
+        if (isDpadModes(mControlsMode)) {
             findViewById(R.id.button_up).setBackgroundTintList(ColorStateList.valueOf((((joy_y >= JOYSTICK_DEADZONE) || (hat_y == 1.0f) || (triggers >= TRIGGER_DEADZONE)) ? getResources().getColor(R.color.dpad_button_pressed) : getResources().getColor(R.color.dpad_button_idle_primary))));
             findViewById(R.id.button_down).setBackgroundTintList(ColorStateList.valueOf((((joy_y <= -JOYSTICK_DEADZONE) || (hat_y == -1.0f) || (triggers <= -TRIGGER_DEADZONE)) ? getResources().getColor(R.color.dpad_button_pressed) : getResources().getColor(R.color.dpad_button_idle_primary))));
             findViewById(R.id.button_left).setBackgroundTintList(ColorStateList.valueOf((((joy_x >= JOYSTICK_DEADZONE) || (hat_x == 1.0f)) ? getResources().getColor(R.color.dpad_button_pressed) : getResources().getColor(R.color.dpad_button_idle_primary))));
@@ -567,20 +487,6 @@ public class NXTControlActivity extends AppCompatActivity {
                 mNXTTalker.StopMotor(Motor.NXT_A, mRegulateSpeed, mSynchronizeMotors);
         }
 
-    }
-
-    private static float getCenteredAxis (MotionEvent event, InputDevice device, int axis) {
-        final InputDevice.MotionRange range = device.getMotionRange(axis, event.getSource());
-        if (range != null) {
-            final float flat = range.getFlat();
-            final float value = event.getAxisValue(axis);
-
-            // Ignore axis values that are within the 'flat' region of the joystick axis center.
-            // A joystick at rest does not always report an absolute position of (0,0).
-            if (Math.abs(value) > flat)
-                return value;
-        }
-        return 0;
     }
 
     //endregion
@@ -692,10 +598,9 @@ public class NXTControlActivity extends AppCompatActivity {
     //region DpadMovement
 
     private void dpadMovement (int action, double leftModifier, double rightModifier, View view) {
-        boolean dcm = (mControlsMode == MODE_DPAD_REGULAR || mControlsMode == MODE_DPAD_RACECAR || mControlsMode == MODE_DPAD_6BUTTON);
-
         if (action == MotionEvent.ACTION_DOWN) {
-            if (dcm) view.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.dpad_button_pressed)));
+            // Highlight Dpad Keys
+            if (isDpadModes(mControlsMode)) view.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.dpad_button_pressed)));
 
             byte power = (byte)mPower;
             if (mReverse)
@@ -711,7 +616,8 @@ public class NXTControlActivity extends AppCompatActivity {
 
         } else if ((action == MotionEvent.ACTION_UP) || (action == MotionEvent.ACTION_CANCEL)) {
             mNXTTalker.StopMotors(Motor.NXT_B, Motor.NXT_C, mRegulateSpeed, mSynchronizeMotors);
-            if (dcm) view.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.dpad_button_idle_primary)));
+            // Remove highlight for Dpad Keys
+            if (isDpadModes(mControlsMode)) view.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.dpad_button_idle_primary)));
         }
     }
 
@@ -927,6 +833,37 @@ public class NXTControlActivity extends AppCompatActivity {
         return true;
     }
 
+    private class PowerSliderChangeListener implements SeekBar.OnSeekBarChangeListener {
+
+        private boolean powerType;
+
+        public PowerSliderChangeListener (boolean primaryPower) {
+            this.powerType = primaryPower;
+        }
+
+        @Override
+        public void onProgressChanged (SeekBar seekBar, int progress, boolean fromUser) {
+            if (this.powerType)
+                mPower = progress;
+            else
+                mPowerSecondary = progress;
+        }
+
+        @Override
+        public void onStartTrackingTouch (SeekBar seekBar) {
+        }
+
+        @Override
+        public void onStopTrackingTouch (SeekBar seekBar) {
+        }
+
+    }
+
     //endregion
+
+    private void closeApp () {
+        this.finishAffinity();
+        this.finishAndRemoveTask();
+    }
 
 }

@@ -33,19 +33,20 @@ import java.util.Objects;
 import eparon.nxtremotecontroller.NXT.EV3Talker;
 import eparon.nxtremotecontroller.NXT.Motor;
 import eparon.nxtremotecontroller.NXT.NXTTalker;
+import eparon.nxtremotecontroller.Util.StateUtils;
 import eparon.nxtremotecontroller.View.Tank4MotorView;
 
 @SuppressLint("ClickableViewAccessibility")
 public class EV3ControlActivity extends AppCompatActivity {
 
-    public String PREFS_NXT = "NXTPrefsFile";
     SharedPreferences prefs;
 
-    static final int REQUEST_ENABLE_BT = 1, REQUEST_CONNECT_DEVICE = 2, REQUEST_SETTINGS = 3;
+    static final int REQUEST_ENABLE_BT = 1, REQUEST_CONNECT_DEVICE = 2;
     static final int MODE_ABCD = 1, MODE_R3PTAR = 2;
 
     BluetoothAdapter mBluetoothAdapter;
     EV3Talker mEV3Talker;
+    StateUtils stateUtils;
 
     int mState = NXTTalker.STATE_NONE, mSavedState = NXTTalker.STATE_NONE;
     private boolean NO_BT = false, mNewLaunch = true;
@@ -62,15 +63,14 @@ public class EV3ControlActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed () {
-        this.finishAffinity();
-        this.finishAndRemoveTask();
+        closeApp();
     }
 
     @Override
     public void onCreate (Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        prefs = getSharedPreferences(PREFS_NXT, Context.MODE_PRIVATE);
+        prefs = getSharedPreferences(NXTControlActivity.PREFS_NXT, Context.MODE_PRIVATE);
         readSharedPreferences(prefs);
 
         if (savedInstanceState != null) {
@@ -88,7 +88,7 @@ public class EV3ControlActivity extends AppCompatActivity {
 
             if (mBluetoothAdapter == null) {
                 Toast.makeText(this, getString(R.string.error_bt_na), Toast.LENGTH_LONG).show();
-                finish();
+                closeApp();
                 return;
             }
         }
@@ -96,26 +96,24 @@ public class EV3ControlActivity extends AppCompatActivity {
         if (mNewLaunch)
             mControlsMode = prefs.getInt("defconmode", NXTControlActivity.MODE_DPAD_REGULAR);
 
-        initializeUI();
         mEV3Talker = new EV3Talker(mHandler);
+        stateUtils = new StateUtils(getApplicationContext());
+        initializeUI();
     }
 
+    //region Activity functions & methods
+
     private void initializeUI () {
-        int orientation = this.getResources().getConfiguration().orientation;
         ActionBar actionBar = getSupportActionBar();
         assert actionBar != null;
-        if (orientation == Configuration.ORIENTATION_LANDSCAPE)
-            actionBar.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        if (this.getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE)
+            actionBar.setBackgroundDrawable(new ColorDrawable((mControlsMode == MODE_ABCD) ? Color.BLACK : Color.TRANSPARENT));
         else
             actionBar.setBackgroundDrawable(new ColorDrawable(getResources().getColor(R.color.colorPrimaryDark)));
 
         if (mControlsMode == MODE_ABCD) {
             // ------------------------------------- Touchpad Mode ------------------------------------- //
             setContentView(R.layout.activity_ev3_abcd);
-
-            if (orientation == Configuration.ORIENTATION_LANDSCAPE)
-                actionBar.setBackgroundDrawable(new ColorDrawable(Color.BLACK));
-
             Tank4MotorView mTank4MotorView = findViewById(R.id.tank4motor);
             mTank4MotorView.setOnTouchListener(this::Tank4MotorOnTouchListener);
         } else if (mControlsMode == MODE_R3PTAR) {
@@ -131,27 +129,14 @@ public class EV3ControlActivity extends AppCompatActivity {
             findViewById(R.id.button_left).setOnTouchListener((v, event) -> EV3OnTouchListener(v, event, Motor.EV3_A, (byte)-60));
             findViewById(R.id.button_right).setOnTouchListener((v, event) -> EV3OnTouchListener(v, event, Motor.EV3_A, (byte)60));
 
-            findViewById(R.id.button_bite).setOnClickListener(this::EV3OnR3ptarBiteLisener);
+            findViewById(R.id.button_bite).setOnClickListener(this::EV3OnR3ptarBiteListener);
 
             LinearLayout steeringLL = findViewById(R.id.steering_layout);
             steeringLL.setVisibility(View.GONE);
 
             SeekBar powerSeekBar = findViewById(R.id.power_seekbar);
             powerSeekBar.setProgress(mPower);
-            powerSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-                @Override
-                public void onProgressChanged (SeekBar seekBar, int progress, boolean fromUser) {
-                    mPower = progress;
-                }
-
-                @Override
-                public void onStartTrackingTouch (SeekBar seekBar) {
-                }
-
-                @Override
-                public void onStopTrackingTouch (SeekBar seekBar) {
-                }
-            });
+            powerSeekBar.setOnSeekBarChangeListener(new PowerSliderChangeListener());
         }
 
         mStateText = findViewById(R.id.state_text);
@@ -174,33 +159,10 @@ public class EV3ControlActivity extends AppCompatActivity {
     }
 
     private void displayState () {
-        String stateStr = "", btnStr = "";
-        int textColor = 0xFFFFFFFF;
-
-        switch (mState) {
-            case NXTTalker.STATE_NONE:
-                stateStr = getString(R.string.conn_state_not_connected);
-                textColor = Color.RED;
-                btnStr = getString(R.string.conn_btn_connect);
-                mConnectionButton.setEnabled(true);
-                break;
-            case NXTTalker.STATE_CONNECTING:
-                stateStr = getString(R.string.conn_state_connecting);
-                textColor = Color.YELLOW;
-                btnStr = getString(R.string.conn_state_connecting);
-                mConnectionButton.setEnabled(false);
-                break;
-            case NXTTalker.STATE_CONNECTED:
-                stateStr = getString(R.string.conn_state_connected);
-                textColor = Color.GREEN;
-                btnStr = getString(R.string.conn_btn_disconnect);
-                mConnectionButton.setEnabled(true);
-                break;
-        }
-
-        mStateText.setText(stateStr);
-        mStateText.setTextColor(textColor);
-        mConnectionButton.setText(btnStr);
+        mStateText.setText(stateUtils.getStateText(mState));
+        mStateText.setTextColor(stateUtils.getStateTextColor(mState));
+        mConnectionButton.setEnabled(stateUtils.ConnectionButtonState(mState));
+        mConnectionButton.setText(stateUtils.getConnectionButtonText(mState));
     }
 
     private void updateMenu () {
@@ -215,6 +177,10 @@ public class EV3ControlActivity extends AppCompatActivity {
         mReverseLR = prefs.getBoolean("swapLeftRight", mReverseLR);
     }
 
+    //endregion
+
+    //region Bluetooth
+
     private void findBrick () {
         startActivityForResult(new Intent(this, ChooseDevice.class), REQUEST_CONNECT_DEVICE);
     }
@@ -228,7 +194,7 @@ public class EV3ControlActivity extends AppCompatActivity {
                     findBrick();
                 } else {
                     Toast.makeText(this, getString(R.string.error_bt_not_enabled), Toast.LENGTH_LONG).show();
-                    finish();
+                    closeApp();
                 }
                 break;
             case REQUEST_CONNECT_DEVICE:
@@ -239,10 +205,12 @@ public class EV3ControlActivity extends AppCompatActivity {
                     mEV3Talker.Connect(device);
                 }
                 break;
-            case REQUEST_SETTINGS:
-                break;
         }
     }
+
+    //endregion
+
+    //region Handler
 
     @SuppressLint("HandlerLeak")
     private final Handler mHandler = new Handler() {
@@ -254,6 +222,10 @@ public class EV3ControlActivity extends AppCompatActivity {
             }
         }
     };
+
+    //endregion
+
+    //region onStart/Stop/Resume
 
     @Override
     protected void onStart () {
@@ -285,6 +257,10 @@ public class EV3ControlActivity extends AppCompatActivity {
         readSharedPreferences(prefs);
     }
 
+    //endregion
+
+    //region onConfig
+
     @Override
     protected void onSaveInstanceState (@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
@@ -299,6 +275,10 @@ public class EV3ControlActivity extends AppCompatActivity {
         super.onConfigurationChanged(newConfig);
         initializeUI();
     }
+
+    //endregion
+
+    //region Options Menu
 
     @Override
     public boolean onCreateOptionsMenu (Menu menu) {
@@ -328,6 +308,10 @@ public class EV3ControlActivity extends AppCompatActivity {
         }
         return true;
     }
+
+    //endregion
+
+    //region Listeners
 
     private boolean EV3OnTouchListener (View v, MotionEvent event, byte port, byte power) {
         int action = event.getAction();
@@ -405,10 +389,34 @@ public class EV3ControlActivity extends AppCompatActivity {
         return true;
     }
 
-    private void EV3OnR3ptarBiteLisener (View v) {
+    private void EV3OnR3ptarBiteListener (View v) {
         mEV3Talker.EV3_Motors(Motor.EV3_D, (byte)80);
         new Handler().postDelayed(() -> mEV3Talker.EV3_StopMotors(Motor.EV3_D), 600);
         new Handler().postDelayed(() -> mEV3Talker.EV3_Motors(Motor.EV3_D, (byte)-70), 600);
+    }
+
+    private class PowerSliderChangeListener implements SeekBar.OnSeekBarChangeListener {
+
+        @Override
+        public void onProgressChanged (SeekBar seekBar, int progress, boolean fromUser) {
+            mPower = progress;
+        }
+
+        @Override
+        public void onStartTrackingTouch (SeekBar seekBar) {
+        }
+
+        @Override
+        public void onStopTrackingTouch (SeekBar seekBar) {
+        }
+
+    }
+
+    //endregion
+
+    private void closeApp () {
+        this.finishAffinity();
+        this.finishAndRemoveTask();
     }
 
 }

@@ -1,17 +1,16 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    package="eparon.nxtremotecontroller"
-    tools:ignore="LockedOrientationActivity,AllowBackup">
+    package="eparon.nxtremotecontroller">
 
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
-
     <uses-permission android:name="android.permission.VIBRATE" />
 
     <application
         android:allowBackup="true"
+        android:fullBackupContent="@xml/backup_descriptor"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
@@ -38,6 +37,16 @@
             android:launchMode="singleTask"
             android:resizeableActivity="false"
             tools:targetApi="n" />
+
+        <activity
+            android:name=".EV3ControlActivity"
+            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"
+            android:keepScreenOn="true"
+            android:label="EV3 Remote Controller"
+            android:launchMode="singleTask"
+            android:resizeableActivity="false"
+            tools:targetApi="n" />
+
         <activity
             android:name=".ChooseDevice"
             android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"
@@ -52,15 +61,6 @@
             android:name=".Changelog"
             android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"
             android:label="Changelog" />
-
-        <activity
-            android:name=".EV3ControlActivity"
-            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"
-            android:keepScreenOn="true"
-            android:label="EV3 Remote Controller"
-            android:launchMode="singleTask"
-            android:resizeableActivity="false"
-            tools:targetApi="n" />
 
     </application>
 
