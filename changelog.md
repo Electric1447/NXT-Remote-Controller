@@ -1,3 +1,10 @@
+## NXT Remote Controller v2.0.0-beta2
+- Fixed the Dpad on some devices.
+- Minor UI tweaks.
+- Code cleanup.
+
+&nbsp;
+
 ## NXT Remote Controller v2.0.0-beta1
 - Added support for EV3 (Experimental)
 - Gamepad input handler now handles Joystick and Triggers as Analog input.
