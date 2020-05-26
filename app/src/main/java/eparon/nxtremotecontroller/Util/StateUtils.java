@@ -8,13 +8,7 @@ import eparon.nxtremotecontroller.R;
 
 public class StateUtils {
 
-    private Context context;
-
-    public StateUtils (Context context) {
-        this.context = context;
-    }
-
-    public String getStateText (int state) {
+    public static String getStateText (int state, Context context) {
         switch (state) {
             case NXTTalker.STATE_NONE:
                 return context.getString(R.string.conn_state_not_connected);
@@ -27,7 +21,7 @@ public class StateUtils {
         }
     }
 
-    public int getStateTextColor (int state) {
+    public static int getStateTextColor (int state) {
         switch (state) {
             case NXTTalker.STATE_NONE:
                 return Color.RED;
@@ -40,7 +34,7 @@ public class StateUtils {
         }
     }
 
-    public String getConnectionButtonText (int state) {
+    public static String getConnectionButtonText (int state, Context context) {
         switch (state) {
             case NXTTalker.STATE_NONE:
                 return context.getString(R.string.conn_btn_connect);
@@ -53,7 +47,7 @@ public class StateUtils {
         }
     }
 
-    public boolean ConnectionButtonState (int state) {
+    public static boolean ConnectionButtonState (int state) {
         return state != NXTTalker.STATE_CONNECTING;
     }
 

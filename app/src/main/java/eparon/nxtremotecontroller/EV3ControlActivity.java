@@ -46,7 +46,6 @@ public class EV3ControlActivity extends AppCompatActivity {
 
     BluetoothAdapter mBluetoothAdapter;
     EV3Talker mEV3Talker;
-    StateUtils stateUtils;
 
     int mState = NXTTalker.STATE_NONE, mSavedState = NXTTalker.STATE_NONE;
     private boolean NO_BT = false, mNewLaunch = true;
@@ -97,7 +96,6 @@ public class EV3ControlActivity extends AppCompatActivity {
             mControlsMode = prefs.getInt("defconmode", NXTControlActivity.MODE_DPAD_REGULAR);
 
         mEV3Talker = new EV3Talker(mHandler);
-        stateUtils = new StateUtils(getApplicationContext());
         initializeUI();
     }
 
@@ -159,10 +157,10 @@ public class EV3ControlActivity extends AppCompatActivity {
     }
 
     private void displayState () {
-        mStateText.setText(stateUtils.getStateText(mState));
-        mStateText.setTextColor(stateUtils.getStateTextColor(mState));
-        mConnectionButton.setEnabled(stateUtils.ConnectionButtonState(mState));
-        mConnectionButton.setText(stateUtils.getConnectionButtonText(mState));
+        mStateText.setText(StateUtils.getStateText(mState, getApplicationContext()));
+        mStateText.setTextColor(StateUtils.getStateTextColor(mState));
+        mConnectionButton.setEnabled(StateUtils.ConnectionButtonState(mState));
+        mConnectionButton.setText(StateUtils.getConnectionButtonText(mState, getApplicationContext()));
     }
 
     private void updateMenu () {

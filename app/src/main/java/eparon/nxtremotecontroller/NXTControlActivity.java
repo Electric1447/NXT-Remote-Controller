@@ -61,7 +61,6 @@ public class NXTControlActivity extends AppCompatActivity {
     BluetoothAdapter mBluetoothAdapter;
     NXTTalker mNXTTalker;
     InputDevice mInputDevice;
-    StateUtils stateUtils;
 
     int mState = NXTTalker.STATE_NONE, mSavedState = NXTTalker.STATE_NONE;
     private boolean NO_BT = false, mNewLaunch = true;
@@ -111,7 +110,6 @@ public class NXTControlActivity extends AppCompatActivity {
             mControlsMode = prefs.getInt("defconmode", NXTControlActivity.MODE_DPAD_REGULAR);
 
         mNXTTalker = new NXTTalker(mHandler);
-        stateUtils = new StateUtils(getApplicationContext());
         initializeUI();
     }
 
@@ -249,10 +247,10 @@ public class NXTControlActivity extends AppCompatActivity {
     }
 
     private void displayState () {
-        mStateText.setText(stateUtils.getStateText(mState));
-        mStateText.setTextColor(stateUtils.getStateTextColor(mState));
-        mConnectionButton.setEnabled(stateUtils.ConnectionButtonState(mState));
-        mConnectionButton.setText(stateUtils.getConnectionButtonText(mState));
+        mStateText.setText(StateUtils.getStateText(mState, getApplicationContext()));
+        mStateText.setTextColor(StateUtils.getStateTextColor(mState));
+        mConnectionButton.setEnabled(StateUtils.ConnectionButtonState(mState));
+        mConnectionButton.setText(StateUtils.getConnectionButtonText(mState, getApplicationContext()));
     }
 
     private void updateMenu () {
